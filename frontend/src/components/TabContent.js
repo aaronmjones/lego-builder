@@ -1,9 +1,10 @@
 import React from "react";
+import AddSet from "./AddSet"
 
 const TabContent = ({ activeTab }) => {
   switch (activeTab) {
     case "Add Set":
-      return <div>Add your set here.</div>;
+      return <AddSet onSetAdded={(id) => console.log("Added set ID:", id)} />;
     case "View Set":
       return <div>Here are your sets.</div>;
     case "Lookup Piece":
