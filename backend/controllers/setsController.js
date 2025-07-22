@@ -10,6 +10,7 @@ async function addSet(req, res) {
   try {
     const pieces = await fetchSetParts(setNumber);
     //console.log('Fetched pieces:', pieces);
+    let setId;
 
     try {
       const setInsert = await db.query(
@@ -17,8 +18,8 @@ async function addSet(req, res) {
         [setNumber, `Set ${setNumber}`]
       );
 
-      const setId = setInsert.rows[0].set_id;
-      res.status(201).json({ message: 'Set added', setId });
+      setId = setInsert.rows[0].set_id;
+      //res.status(201).json({ message: 'Set added', setId });
     } catch (err) {
       if (err.code === '23505') {
         // PostgreSQL unique_violation error code

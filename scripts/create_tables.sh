@@ -16,7 +16,6 @@ CREATE TABLE IF NOT EXISTS lego_sets (
   set_id SERIAL PRIMARY KEY,
   set_number VARCHAR UNIQUE,
   name TEXT
-  CONSTRAINT unique_set_number UNIQUE (set_number)
 );
 
 CREATE TABLE IF NOT EXISTS lego_pieces (
