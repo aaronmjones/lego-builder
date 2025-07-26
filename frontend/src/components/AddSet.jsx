@@ -26,13 +26,20 @@ function AddSet({ onSetAdded }) {
   };
 
   return (
-    <div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
       <TextField
         label="LEGO Set Number"
         value={setNumber}
         onChange={(e) => setSetNumber(e.target.value)}
+        size="small"
+        sx={{ height: 40 }}
       />
-      <Button variant="contained" onClick={handleSubmit}>
+      <Button
+        variant="contained"
+        onClick={handleSubmit}
+        size="small"
+        sx={{ height: 40 }}
+      >
         Add Set
       </Button>
       {addedSetId && <PieceTable setId={addedSetId} />}

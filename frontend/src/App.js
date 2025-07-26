@@ -7,7 +7,7 @@ import UserStatus from './components/UserStatus'
 const App = () => {
   const [activeTab, setActiveTab] = useState("Add Set");
 
-  const tabs = ["Add Set", "View Set", "Lookup Piece", "Wishlist"];
+  const tabs = ["Add Set", "My Sets", "Lookup Piece", "Wishlist"];
 
   return (
     <div className="app">

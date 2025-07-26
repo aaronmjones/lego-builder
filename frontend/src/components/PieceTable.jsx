@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../api';
 import {
     Table, TableBody, TableCell, TableHead, TableRow,
-    TextField, Typography
+    TextField, Typography, IconButton, InputAdornment
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 
 function PieceTable({ setId, setName }) {
     const [pieces, setPieces] = useState([]);
@@ -13,16 +15,20 @@ function PieceTable({ setId, setName }) {
     }, [setId]);
 
     const handleOwnedChange = (pieceId, value) => {
-        const parsedQty = parseInt(value, 10);
+        const parsedQty = Math.max(0, parseInt(value, 10) || 0);
+        const piece = pieces.find(p => p.piece_id === pieceId);
+        const maxQty = piece ? piece.required_qty : Infinity;
+        const finalQty = Math.min(parsedQty, maxQty);
+
         api.put('/sets/piece', {
             setId,
             pieceId,
-            owned_qty: parsedQty,
+            owned_qty: finalQty,
             userId: 1
         }).then(() => {
             setPieces((prev) =>
                 prev.map((p) =>
-                    p.piece_id === pieceId ? { ...p, owned_qty: parsedQty } : p
+                    p.piece_id === pieceId ? { ...p, owned_qty: finalQty } : p
                 )
             );
         }).catch((err) => {
@@ -30,6 +36,17 @@ function PieceTable({ setId, setName }) {
         });
     };
 
+    const handleIncrement = (piece) => {
+        if ((piece.owned_qty || 0) < piece.required_qty) {
+            handleOwnedChange(piece.piece_id, (piece.owned_qty || 0) + 1);
+        }
+    };
+
+    const handleDecrement = (piece) => {
+        if ((piece.owned_qty || 0) > 0) {
+            handleOwnedChange(piece.piece_id, (piece.owned_qty || 0) - 1);
+        }
+    };
 
     return (
         <div>
@@ -52,14 +69,27 @@ function PieceTable({ setId, setName }) {
                             <TableCell>{piece.color}</TableCell>
                             <TableCell>{piece.required_qty}</TableCell>
                             <TableCell>
-                                <TextField
-                                    type="number"
-                                    value={piece.owned_qty || 0}
-                                    onChange={(e) =>
-                                        handleOwnedChange(piece.piece_id, e.target.value)
-                                    }
-                                    style={{ width: '60px' }}
-                                />
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => handleDecrement(piece)}
+                                        disabled={(piece.owned_qty || 0) <= 0}
+                                        sx={{ marginRight: 1 }}
+                                    >
+                                        <RemoveIcon />
+                                    </IconButton>
+                                    <span style={{ minWidth: 32, textAlign: 'center', fontSize: 16 }}>
+                                        {piece.owned_qty || 0}
+                                    </span>
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => handleIncrement(piece)}
+                                        disabled={(piece.owned_qty || 0) >= piece.required_qty}
+                                        sx={{ marginLeft: 1 }}
+                                    >
+                                        <AddIcon />
+                                    </IconButton>
+                                </div>
                             </TableCell>
                         </TableRow>
                     ))}

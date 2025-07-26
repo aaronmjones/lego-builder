@@ -23,7 +23,7 @@ const TabContent = ({ activeTab }) => {
   switch (activeTab) {
     case "Add Set":
       return <AddSet onSetAdded={(id) => console.log("Added set ID:", id)} />;
-    case "View Set":
+    case "My Sets":
       return <SetTable />;
     case "Lookup Piece":
       return <div>Search for a piece.</div>;
