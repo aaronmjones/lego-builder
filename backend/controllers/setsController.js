@@ -103,4 +103,32 @@ async function updateOwnedPiece(req, res) {
   res.json({ message: 'Owned quantity updated' });
 }
 
-module.exports = { addSet, getSetPieces, updateOwnedPiece };
+async function getAllSetsWithProgress(req, res) {
+  const userId = req.query.userId ? Number(req.query.userId) : 1; // fallback to 1 if not provided
+
+  const result = await db.query(
+    `SELECT 
+        s.set_id AS id,
+        s.set_number,
+        s.name,
+        COALESCE(SUM(usp.owned_qty), 0) AS ownedpieces,
+        COALESCE(SUM(sp.required_qty), 0) AS totalpieces
+     FROM lego_sets s
+     JOIN set_pieces sp ON s.set_id = sp.set_id
+     LEFT JOIN user_set_pieces usp 
+       ON usp.set_id = s.set_id AND usp.piece_id = sp.piece_id AND usp.user_id = $1
+     GROUP BY s.set_id, s.set_number, s.name
+     ORDER BY s.set_id`
+    , [userId]
+  );
+
+  res.json(result.rows.map(row => ({
+    id: row.id,
+    setNumber: row.set_number,
+    name: row.name,
+    ownedPieces: Number(row.ownedpieces),
+    totalPieces: Number(row.totalpieces)
+  })));
+}
+
+module.exports = { addSet, getSetPieces, updateOwnedPiece, getAllSetsWithProgress };
