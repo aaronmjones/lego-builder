@@ -9,13 +9,16 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import LinearProgress from '@mui/material/LinearProgress';
 import PieceTable from './PieceTable';
+import Slide from '@mui/material/Slide';
+import Button from '@mui/material/Button';
 
 const SetTable = () => {
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSetId, setSelectedSetId] = useState(null);
 
-  useEffect(() => {
+  const fetchSets = () => {
+    setLoading(true);
     const userId = 1; // Replace with actual user ID if needed
     api.get(`/sets?userId=${userId}`)
       .then(res => {
@@ -26,57 +29,79 @@ const SetTable = () => {
         console.error('Fetch error:', err);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchSets();
   }, []);
+
+  const handleBack = () => {
+    setSelectedSetId(null);
+    fetchSets(); // Refetch sets when going back
+  };
 
   if (loading) return <div>Loading...</div>;
 
   return (
-    <>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Set ID</TableCell>
-              <TableCell>Set Name</TableCell>
-              <TableCell>Progress</TableCell>
-              <TableCell>Owned / Total</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sets.map(set => {
-              const percent = Math.round((set.ownedPieces / set.totalPieces) * 100);
-              return (
-                <TableRow
-                  key={set.id}
-                  hover
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedSetId(set.id)}
-                >
-                  <TableCell>{set.id}</TableCell>
-                  <TableCell>{set.name}</TableCell>
-                  <TableCell>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={percent}
-                        sx={{ height: 10, borderRadius: 5, flex: 1 }}
-                      />
-                      <span style={{ marginLeft: 8, minWidth: 40 }}>{percent}%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {set.ownedPieces} / {set.totalPieces}
-                  </TableCell>
+    <div style={{ position: 'relative', minHeight: 400 }}>
+      <Slide direction="right" in={!selectedSetId} mountOnEnter unmountOnExit>
+        <div style={{ position: 'absolute', width: '100%' }}>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Set ID</TableCell>
+                  <TableCell>Set Name</TableCell>
+                  <TableCell>Progress</TableCell>
+                  <TableCell>Owned / Total</TableCell>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      {selectedSetId && (
-        <PieceTable setId={selectedSetId} />
-      )}
-    </>
+              </TableHead>
+              <TableBody>
+                {sets.map(set => {
+                  const percent = Math.round((set.ownedPieces / set.totalPieces) * 100);
+                  return (
+                    <TableRow
+                      key={set.id}
+                      hover
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => setSelectedSetId(set.id)}
+                    >
+                      <TableCell>{set.id}</TableCell>
+                      <TableCell>{set.name}</TableCell>
+                      <TableCell>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={percent}
+                            sx={{ height: 10, borderRadius: 5, flex: 1 }}
+                          />
+                          <span style={{ marginLeft: 8, minWidth: 40 }}>{percent}%</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {set.ownedPieces} / {set.totalPieces}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
+      </Slide>
+      <Slide direction="left" in={!!selectedSetId} mountOnEnter unmountOnExit>
+        <div style={{ position: 'absolute', width: '100%' }}>
+          <Button
+            variant="outlined"
+            style={{ margin: '16px 0 16px 16px' }}
+            onClick={handleBack}
+          >
+            Back
+          </Button>
+          {selectedSetId && <PieceTable setId={selectedSetId} />}
+        </div>
+      </Slide>
+    </div>
   );
 };
 
