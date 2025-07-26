@@ -3,14 +3,17 @@ import { api } from '../api';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import PieceTable from './PieceTable'; // Assuming you have a PieceTable component
+import useUser from '../hooks/useUser';
 
 function AddSet({ onSetAdded }) {
+  const user = useUser();
+  const userId = user?.uid; // Assuming user object has uid property
   const [setNumber, setSetNumber] = useState('');
   const [addedSetId, setAddedSetId] = useState(null);
 
   const handleSubmit = async () => {
     try {
-      const res = await api.post('/sets', { setNumber });
+      const res = await api.post('/sets', { setNumber, userId });
       const setId = res.data.setId;
       setAddedSetId(setId); // Save the new set ID
       onSetAdded(setId); // Notify parent

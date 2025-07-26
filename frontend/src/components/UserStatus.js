@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
-const UserStatus = () => {
-  const [user, setUser] = useState(null);
-
+const UserStatus = ({ user }) => {
   useEffect(() => {
     return onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+      // Removed local user state and using the prop instead
     });
   }, []);
 

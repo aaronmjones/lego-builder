@@ -5,30 +5,41 @@ const { fetchSetParts } = require('../utils/rebrickable');
 //console.log('Imported fetchSetParts:', fetchSetParts);
 
 async function addSet(req, res) {
-  const { setNumber } = req.body;
+  const { setNumber, userId } = req.body;
 
   try {
     const pieces = await fetchSetParts(setNumber);
-    //console.log('Fetched pieces:', pieces);
     let setId;
 
+    // Try to insert the set, or get its set_id if it already exists
     try {
       const setInsert = await db.query(
         'INSERT INTO lego_sets (set_number, name) VALUES ($1, $2) RETURNING set_id',
         [setNumber, `Set ${setNumber}`]
       );
-
       setId = setInsert.rows[0].set_id;
-      //res.status(201).json({ message: 'Set added', setId });
     } catch (err) {
       if (err.code === '23505') {
-        // PostgreSQL unique_violation error code
+        // Set already exists, get its set_id
+        const existingSet = await db.query(
+          'SELECT set_id FROM lego_sets WHERE set_number = $1',
+          [setNumber]
+        );
+        setId = existingSet.rows[0].set_id;
+      } else {
         console.error('Database error:', err);
-        return res.status(409).json({ message: `Set ${setNumber} already exists` });
+        return res.status(500).json({ message: 'Internal server error' });
       }
+    }
 
-      console.error('Database error:', err);
-      return res.status(500).json({ message: 'Internal server error' });
+    // Always insert into user_lego_sets after setId is determined
+    if (userId && setId) {
+      await db.query(
+        `INSERT INTO user_lego_sets (user_id, set_id)
+         VALUES ($1, $2)
+         ON CONFLICT (user_id, set_id) DO NOTHING`,
+        [userId, setId]
+      );
     }
 
     for (let piece of pieces) {
@@ -73,6 +84,7 @@ async function addSet(req, res) {
 
 async function getSetPieces(req, res) {
   const { id } = req.params;
+  const userId = req.query.userId ? Number(req.query.userId) : 1; // fallback to 1 if not provided
 
   const result = await db.query(
     `SELECT lp.piece_id, lp.name, lp.color, lp.image_url,
@@ -81,9 +93,9 @@ async function getSetPieces(req, res) {
      FROM set_pieces sp
      JOIN lego_pieces lp ON lp.piece_id = sp.piece_id
      LEFT JOIN user_set_pieces usp
-     ON usp.set_id = sp.set_id AND usp.piece_id = sp.piece_id AND usp.user_id = 1
+     ON usp.set_id = sp.set_id AND usp.piece_id = sp.piece_id AND usp.user_id = $2
      WHERE sp.set_id = $1`,
-    [id]
+    [id, userId]
   );
 
   res.json(result.rows);

@@ -11,16 +11,20 @@ import LinearProgress from '@mui/material/LinearProgress';
 import PieceTable from './PieceTable';
 import Slide from '@mui/material/Slide';
 import Button from '@mui/material/Button';
+import useUser from '../hooks/useUser';
 
 const SetTable = () => {
+  const user = useUser();
+  const userId = user?.uid; // Assuming user object has uid property
+  console.log('Current user:', user); // <-- Add this line
+
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSetId, setSelectedSetId] = useState(null);
 
   const fetchSets = () => {
     setLoading(true);
-    const userId = 1; // Replace with actual user ID if needed
-    api.get(`/sets?userId=${userId}`)
+    api.get(`/sets?userId=${userId}`) // FIXME: be more consistent about query params
       .then(res => {
         setSets(res.data);
         setLoading(false);

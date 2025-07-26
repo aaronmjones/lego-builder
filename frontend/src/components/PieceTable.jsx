@@ -6,13 +6,19 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import useUser from '../hooks/useUser';
 
 function PieceTable({ setId, setName }) {
+    const user = useUser();
+    const userId = user?.uid; // Assuming user object has uid property
+    console.log('Current userId:', userId); // <-- Add this line
     const [pieces, setPieces] = useState([]);
 
     useEffect(() => {
-        api.get(`/sets/${setId}/pieces`).then((res) => setPieces(res.data));
-    }, [setId]);
+        if (!userId) return;
+        api.get(`/sets/${setId}/pieces`, { params: { userId } })
+            .then((res) => setPieces(res.data));
+    }, [setId, userId]);
 
     const handleOwnedChange = (pieceId, value) => {
         const parsedQty = Math.max(0, parseInt(value, 10) || 0);
@@ -24,7 +30,7 @@ function PieceTable({ setId, setName }) {
             setId,
             pieceId,
             owned_qty: finalQty,
-            userId: 1
+            userId: userId
         }).then(() => {
             setPieces((prev) =>
                 prev.map((p) =>
