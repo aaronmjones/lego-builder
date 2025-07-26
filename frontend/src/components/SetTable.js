@@ -50,7 +50,7 @@ const SetTable = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Set ID</TableCell>
+                  <TableCell>Image</TableCell>
                   <TableCell>Set Name</TableCell>
                   <TableCell>Progress</TableCell>
                   <TableCell>Owned / Total</TableCell>
@@ -59,6 +59,7 @@ const SetTable = () => {
               <TableBody>
                 {sets.map(set => {
                   const percent = Math.round((set.ownedPieces / set.totalPieces) * 100);
+                  const imageUrl = set.imageUrl || `https://cdn.rebrickable.com/media/sets/${set.setNumber}.jpg`;
                   return (
                     <TableRow
                       key={set.id}
@@ -66,16 +67,31 @@ const SetTable = () => {
                       style={{ cursor: 'pointer' }}
                       onClick={() => setSelectedSetId(set.id)}
                     >
-                      <TableCell>{set.id}</TableCell>
+                      <TableCell>
+                        <img
+                          src={imageUrl}
+                          alt={set.name}
+                          style={{ width: 60, height: 60, objectFit: 'contain', borderRadius: 8 }}
+                          onError={e => { e.target.src = 'https://cdn.rebrickable.com/media/sets/placeholder.jpg'; }}
+                        />
+                      </TableCell>
                       <TableCell>{set.name}</TableCell>
                       <TableCell>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', padding: '8px 0' }}>
                           <LinearProgress
                             variant="determinate"
                             value={percent}
-                            sx={{ height: 10, borderRadius: 5, flex: 1 }}
+                            sx={{
+                              height: 20,
+                              borderRadius: 10,
+                              flex: 1,
+                              backgroundColor: '#e0e0e0',
+                              '& .MuiLinearProgress-bar': {
+                                backgroundColor: '#1976d2',
+                              },
+                            }}
                           />
-                          <span style={{ marginLeft: 8, minWidth: 40 }}>{percent}%</span>
+                          <span style={{ marginLeft: 16 }}>{percent}%</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -98,7 +114,12 @@ const SetTable = () => {
           >
             Back
           </Button>
-          {selectedSetId && <PieceTable setId={selectedSetId} />}
+          {selectedSetId && (
+            <PieceTable
+              setId={selectedSetId}
+              setName={sets.find(set => set.id === selectedSetId)?.name}
+            />
+          )}
         </div>
       </Slide>
     </div>

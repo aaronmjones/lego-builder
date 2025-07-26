@@ -5,7 +5,7 @@ import {
     TextField, Typography
 } from '@mui/material';
 
-function PieceTable({ setId }) {
+function PieceTable({ setId, setName }) {
     const [pieces, setPieces] = useState([]);
 
     useEffect(() => {
@@ -33,7 +33,7 @@ function PieceTable({ setId }) {
 
     return (
         <div>
-            <Typography variant="h6">Pieces for Set {setId}</Typography>
+            <Typography variant="h6">Pieces for {setName}</Typography>
             <Table>
                 <TableHead>
                     <TableRow>
