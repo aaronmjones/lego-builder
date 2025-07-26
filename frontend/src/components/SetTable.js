@@ -49,6 +49,8 @@ const SetTable = () => {
                     }}
                   />
                 </div>
+              </td>
+              <td>
                 <span style={{ marginLeft: 8 }}>
                   {set.ownedPieces} / {set.totalPieces}
                 </span>
