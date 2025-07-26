@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import LinearProgress from '@mui/material/LinearProgress';
 
 const SetTable = () => {
   const [sets, setSets] = useState([]);
@@ -9,7 +17,6 @@ const SetTable = () => {
     const userId = 1; // Replace with actual user ID if needed
     api.get(`/sets?userId=${userId}`)
       .then(res => {
-        console.log('Axios response:', res); // Print the Response object
         setSets(res.data);
         setLoading(false);
       })
@@ -22,44 +29,42 @@ const SetTable = () => {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Set ID</th>
-          <th>Set Name</th>
-          <th>Progress</th>
-        </tr>
-      </thead>
-      <tbody>
-        {sets.map(set => {
-          const percent = Math.round((set.ownedPieces / set.totalPieces) * 100);
-          return (
-            <tr key={set.id}>
-              <td>{set.id}</td>
-              <td>{set.name}</td>
-              <td>
-                <div style={{ width: 150, background: '#eee', borderRadius: 4 }}>
-                  <div
-                    style={{
-                      width: `${percent}%`,
-                      background: '#4caf50',
-                      height: 16,
-                      borderRadius: 4,
-                      transition: 'width 0.3s'
-                    }}
-                  />
-                </div>
-              </td>
-              <td>
-                <span style={{ marginLeft: 8 }}>
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Set ID</TableCell>
+            <TableCell>Set Name</TableCell>
+            <TableCell>Progress</TableCell>
+            <TableCell>Owned / Total</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {sets.map(set => {
+            const percent = Math.round((set.ownedPieces / set.totalPieces) * 100);
+            return (
+              <TableRow key={set.id}>
+                <TableCell>{set.id}</TableCell>
+                <TableCell>{set.name}</TableCell>
+                <TableCell>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <LinearProgress
+                      variant="determinate"
+                      value={percent}
+                      sx={{ height: 10, borderRadius: 5, flex: 1 }}
+                    />
+                    <span style={{ marginLeft: 8, minWidth: 40 }}>{percent}%</span>
+                  </div>
+                </TableCell>
+                <TableCell>
                   {set.ownedPieces} / {set.totalPieces}
-                </span>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 
