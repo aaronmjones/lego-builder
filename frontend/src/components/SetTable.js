@@ -16,32 +16,29 @@ import useUser from '../hooks/useUser';
 const SetTable = () => {
   const user = useUser();
   const userId = user?.uid; // Assuming user object has uid property
-  console.log('Current user:', user); // <-- Add this line
-
+  
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSetId, setSelectedSetId] = useState(null);
 
-  const fetchSets = () => {
+  const fetchSets = (userId) => {
     setLoading(true);
-    api.get(`/sets?userId=${userId}`) // FIXME: be more consistent about query params
-      .then(res => {
-        setSets(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Fetch error:', err);
-        setLoading(false);
-      });
+    console.log('Fetching sets for userId:', userId);
+    api.get('/sets', { params: { userId } })
+      .then(res => setSets(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    fetchSets();
-  }, []);
+    if (user?.uid) {
+      fetchSets(user.uid);
+    }
+  }, [user]);
 
   const handleBack = () => {
     setSelectedSetId(null);
-    fetchSets(); // Refetch sets when going back
+    fetchSets(user.uid); // Refetch sets when going back
   };
 
   if (loading) return <div>Loading...</div>;

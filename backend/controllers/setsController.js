@@ -102,6 +102,8 @@ async function getSetPieces(req, res) {
 }
 
 async function updateOwnedPiece(req, res) {
+  console.log('updateOwnedPice');
+
   const { setId, pieceId, owned_qty, userId } = req.body;
 
   console.log('Updating owned piece:', {
@@ -118,8 +120,16 @@ async function updateOwnedPiece(req, res) {
 }
 
 async function getAllSetsWithProgress(req, res) {
-  const userId = req.query.userId ? Number(req.query.userId) : 1; // fallback to 1 if not provided
+  console.log('Fetching user sets with progress');
+  const userId = req.query.userId;
 
+  if (!userId) {
+    return res.status(400).json({ error: 'Missing userId' });
+  }
+
+  console.log('Fetching sets for userId:', userId);
+  // FIXME: Do I really need to join on lego_sets here?
+  // It seems like I can just use user_lego_sets and user_set_pieces.
   const result = await db.query(
     `SELECT 
         s.set_id AS id,
@@ -127,14 +137,18 @@ async function getAllSetsWithProgress(req, res) {
         s.name,
         COALESCE(SUM(usp.owned_qty), 0) AS ownedpieces,
         COALESCE(SUM(sp.required_qty), 0) AS totalpieces
-     FROM lego_sets s
+     FROM user_lego_sets uls
+     JOIN lego_sets s ON uls.set_id = s.set_id
      JOIN set_pieces sp ON s.set_id = sp.set_id
      LEFT JOIN user_set_pieces usp 
        ON usp.set_id = s.set_id AND usp.piece_id = sp.piece_id AND usp.user_id = $1
+     WHERE uls.user_id = $1
      GROUP BY s.set_id, s.set_number, s.name
-     ORDER BY s.set_id`
-    , [userId]
+     ORDER BY s.set_id`,
+    [userId]
   );
+
+  console.log('Fetched sets:', result.rows);
 
   res.json(result.rows.map(row => ({
     id: row.id,

@@ -20,12 +20,13 @@ function PieceTable({ setId, setName }) {
             .then((res) => setPieces(res.data));
     }, [setId, userId]);
 
-    const handleOwnedChange = (pieceId, value) => {
+    const handleOwnedChange = (pieceId, value, userId) => {
         const parsedQty = Math.max(0, parseInt(value, 10) || 0);
         const piece = pieces.find(p => p.piece_id === pieceId);
         const maxQty = piece ? piece.required_qty : Infinity;
         const finalQty = Math.min(parsedQty, maxQty);
 
+        console.log(`Updating piece ${pieceId} owned quantity to ${finalQty}`);
         api.put('/sets/piece', {
             setId,
             pieceId,
@@ -44,13 +45,13 @@ function PieceTable({ setId, setName }) {
 
     const handleIncrement = (piece) => {
         if ((piece.owned_qty || 0) < piece.required_qty) {
-            handleOwnedChange(piece.piece_id, (piece.owned_qty || 0) + 1);
+            handleOwnedChange(piece.piece_id, (piece.owned_qty || 0) + 1, user?.uid);
         }
     };
 
     const handleDecrement = (piece) => {
         if ((piece.owned_qty || 0) > 0) {
-            handleOwnedChange(piece.piece_id, (piece.owned_qty || 0) - 1);
+            handleOwnedChange(piece.piece_id, (piece.owned_qty || 0) - 1, user?.uid);
         }
     };
 
