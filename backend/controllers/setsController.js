@@ -84,7 +84,7 @@ async function addSet(req, res) {
 
 async function getSetPieces(req, res) {
   const { id } = req.params;
-  const userId = req.query.userId ? Number(req.query.userId) : 1; // fallback to 1 if not provided
+  const userId = req.query.userId;
 
   const result = await db.query(
     `SELECT lp.piece_id, lp.name, lp.color, lp.image_url,
@@ -98,6 +98,8 @@ async function getSetPieces(req, res) {
     [id, userId]
   );
 
+  console.log('Fetched pieces for set:', id, 'User ID:', userId);
+  console.log('Result:', result.rows);
   res.json(result.rows);
 }
 
@@ -128,8 +130,6 @@ async function getAllSetsWithProgress(req, res) {
   }
 
   console.log('Fetching sets for userId:', userId);
-  // FIXME: Do I really need to join on lego_sets here?
-  // It seems like I can just use user_lego_sets and user_set_pieces.
   const result = await db.query(
     `SELECT 
         s.set_id AS id,
