@@ -159,4 +159,79 @@ async function getAllSetsWithProgress(req, res) {
   })));
 }
 
-module.exports = { addSet, getSetPieces, updateOwnedPiece, getAllSetsWithProgress };
+async function getMatchingNeededPieces(req, res) {
+  const { query, userId } = req.query;
+
+  console.log('Searching pieces for userId:', userId, 'with query:', query);
+
+  if (!userId || !query) {
+    return res.status(400).json({ error: 'Missing userId or query' });
+  }
+
+  try {
+    const sql = `
+      SELECT
+        p.piece_id,
+        p.name AS piece_name,
+        p.image_url AS piece_img,
+        s.set_id,
+        s.name AS set_name,
+        s.set_number,
+        sp.required_qty,
+        COALESCE(usp.owned_qty, 0) AS owned_qty
+      FROM lego_pieces p
+      JOIN set_pieces sp ON p.piece_id = sp.piece_id
+      JOIN lego_sets s ON s.set_id = sp.set_id
+      JOIN user_lego_sets uls ON uls.set_id = s.set_id
+      LEFT JOIN user_set_pieces usp
+        ON usp.set_id = s.set_id
+        AND usp.piece_id = p.piece_id
+        AND usp.user_id = uls.user_id
+      WHERE uls.user_id = $1
+        AND p.name ILIKE '%' || $2 || '%'
+    `;
+
+    const { rows } = await db.query(sql, [userId, query]);
+
+    // Group results by piece
+    const resultMap = new Map();
+
+    rows.forEach(row => {
+      const {
+        piece_id,
+        piece_name,
+        piece_img,
+        set_id,
+        set_name,
+        set_number,
+        required_qty,
+        owned_qty
+      } = row;
+
+      if (!resultMap.has(piece_id)) {
+        resultMap.set(piece_id, {
+          piece_id,
+          piece_name,
+          piece_img,
+          sets: []
+        });
+      }
+
+      resultMap.get(piece_id).sets.push({
+        set_id,
+        set_name,
+        set_img: `https://cdn.rebrickable.com/media/sets/${set_number}.jpg`, // Example image URL format
+        required_qty,
+        owned_qty
+      });
+    });
+
+    const response = Array.from(resultMap.values());
+    res.json(response);
+  } catch (err) {
+    console.error('Error during piece search:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+module.exports = { addSet, getSetPieces, updateOwnedPiece, getAllSetsWithProgress, getMatchingNeededPieces };
