@@ -102,8 +102,10 @@ async function getSetPieces(req, res) {
 }
 
 async function updateOwnedPiece(req, res) {
-  const { userId = 1, setId, pieceId, owned_qty } = req.body;
+  const { setId, pieceId, owned_qty, userId } = req.body;
 
+  console.log('Updating owned piece:', {
+    setId, userId, pieceId, owned_qty });
   await db.query(
     `INSERT INTO user_set_pieces (user_id, set_id, piece_id, owned_qty)
      VALUES ($1, $2, $3, $4)
