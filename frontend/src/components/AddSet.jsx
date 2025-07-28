@@ -7,24 +7,23 @@ import useUser from '../hooks/useUser';
 
 function AddSet({ onSetAdded }) {
   const user = useUser();
-  const userId = user?.uid; // Assuming user object has uid property
-  const [setNumber, setSetNumber] = useState('');
+  const userId = user?.uid;
+  const [setNumber, setSetNumber] = useState(''); // FIXME: Do I need setNumber and addedSetId?
   const [addedSetId, setAddedSetId] = useState(null);
+  const [addedSetName, setAddedSetName] = useState('');
 
   const handleSubmit = async () => {
     try {
       const res = await api.post('/sets', { setNumber, userId });
       const setId = res.data.setId;
       setAddedSetId(setId); // Save the new set ID
+      setAddedSetName(res.data.setName); // Save the new set name
       onSetAdded(setId); // Notify parent
     } catch (error) {
       console.error('Failed to add set:', error.response.data.message);
 
       // Optional: user-facing alert or error state
       alert(`Could not add the set: ${error.response.data.message}`);
-      
-      // Optional: set error state
-      // setError(error.message || 'Unknown error');
     }
   };
 
@@ -45,7 +44,7 @@ function AddSet({ onSetAdded }) {
       >
         Add Set
       </Button>
-      {addedSetId && <SetPiecesTable setId={addedSetId} />}
+      {addedSetId && <SetPiecesTable setId={addedSetId} setName={addedSetName} />}
     </div>
   );
 }

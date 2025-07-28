@@ -12,6 +12,7 @@ async function addSet(req, res) {
     let setId;
 
     // Try to insert the set, or get its set_id if it already exists
+    // FIXME: Get the set name from rebrickable; don't use "Set ${setNumber}"
     try {
       const setInsert = await db.query(
         'INSERT INTO lego_sets (set_number, name) VALUES ($1, $2) RETURNING set_id',
@@ -234,4 +235,50 @@ async function getMatchingNeededPieces(req, res) {
   }
 };
 
-module.exports = { addSet, getSetPieces, updateOwnedPiece, getAllSetsWithProgress, getMatchingNeededPieces };
+async function deleteSet(req, res) {
+  const { id } = req.params;
+  const userId = req.query.userId;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Missing userId' });
+  }
+
+  try {
+    // Delete from user_lego_sets
+    await db.query(
+      `DELETE FROM user_lego_sets WHERE user_id = $1 AND set_id = $2`,
+      [userId, id]
+    );
+
+    // Delete from user_set_pieces
+    await db.query(
+      `DELETE FROM user_set_pieces WHERE user_id = $1 set_id = $2`,
+      [userId, id]
+    );
+
+    // // Delete from lego_sets
+    // await db.query(
+    //   `DELETE FROM lego_sets WHERE set_id = $1`,
+    //   [id]
+    // );
+
+    // // Delete from set_pieces
+    // await db.query(
+    //   `DELETE FROM set_pieces WHERE set_id = $1`,
+    //   [id]
+    // );
+
+    // // Delete from lego_pieces (optional, if no longer used)
+    // await db.query(
+    //   `DELETE FROM lego_pieces WHERE piece_id NOT IN (SELECT piece_id FROM set_pieces)`,
+    //   []
+    // );
+
+    res.json({ message: 'Set deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting set:', err);
+    res.status(500).json({ error: 'Failed to delete set' });
+  }
+}
+
+module.exports = { addSet, getSetPieces, updateOwnedPiece, getAllSetsWithProgress, getMatchingNeededPieces, deleteSet };
