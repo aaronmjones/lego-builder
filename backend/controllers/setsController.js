@@ -1,5 +1,5 @@
 const db = require('../db');
-const { fetchSetParts } = require('../utils/rebrickable');
+const { fetchSetParts, setExists, getSetName } = require('../utils/rebrickable');
 
 //console.log('API Key:', process.env.REBRICKABLE_API_KEY);
 //console.log('Imported fetchSetParts:', fetchSetParts);
@@ -8,6 +8,14 @@ async function addSet(req, res) {
   const { setNumber, userId } = req.body;
 
   try {
+    if (!setExists(setNumber)) {
+      return res.status(400).json({ message: 'Set does not exist' });
+    }
+    setName = await getSetName(setNumber);
+    if (!setName) {
+      return res.status(400).json({ message: 'Set name not found' });
+    }
+
     const pieces = await fetchSetParts(setNumber);
     let setId;
 
@@ -16,7 +24,7 @@ async function addSet(req, res) {
     try {
       const setInsert = await db.query(
         'INSERT INTO lego_sets (set_number, name) VALUES ($1, $2) RETURNING set_id',
-        [setNumber, `Set ${setNumber}`]
+        [setNumber, setName]
       );
       setId = setInsert.rows[0].set_id;
     } catch (err) {
@@ -76,7 +84,7 @@ async function addSet(req, res) {
       );
     }
 
-    res.status(201).json({ message: 'Set added', setId });
+    res.status(201).json({ message: 'Set added', setId, setName });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Failed to add set' });
