@@ -8,7 +8,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import LinearProgress from '@mui/material/LinearProgress';
-import PieceTable from './PieceTable';
+import SetPiecesTable from './SetPiecesTable';
 import Slide from '@mui/material/Slide';
 import Button from '@mui/material/Button';
 import useUser from '../hooks/useUser';
@@ -116,7 +116,7 @@ const MySetsTable = () => {
             Back
           </Button>
           {selectedSetId && (
-            <PieceTable
+            <SetPiecesTable
               setId={selectedSetId}
               setName={sets.find(set => set.id === selectedSetId)?.name}
             />

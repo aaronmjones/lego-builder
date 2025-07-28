@@ -8,7 +8,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import useUser from '../hooks/useUser';
 
-function PieceTable({ setId, setName }) {
+function SetPiecesTable({ setId, setName }) {
     const user = useUser();
     const userId = user?.uid; // Assuming user object has uid property
     console.log('Current userId:', userId); // <-- Add this line
@@ -106,4 +106,4 @@ function PieceTable({ setId, setName }) {
     );
 }
 
-export default PieceTable;
+export default SetPiecesTable;

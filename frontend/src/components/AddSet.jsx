@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { api } from '../api';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import PieceTable from './PieceTable'; // Assuming you have a PieceTable component
+import SetPiecesTable from './SetPiecesTable';
 import useUser from '../hooks/useUser';
 
 function AddSet({ onSetAdded }) {
@@ -45,7 +45,7 @@ function AddSet({ onSetAdded }) {
       >
         Add Set
       </Button>
-      {addedSetId && <PieceTable setId={addedSetId} />}
+      {addedSetId && <SetPiecesTable setId={addedSetId} />}
     </div>
   );
 }
