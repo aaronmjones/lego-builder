@@ -13,7 +13,7 @@ import Slide from '@mui/material/Slide';
 import Button from '@mui/material/Button';
 import useUser from '../hooks/useUser';
 
-const SetTable = () => {
+const MySetsTable = () => {
   const user = useUser();
   const userId = user?.uid; // Assuming user object has uid property
   
@@ -127,4 +127,4 @@ const SetTable = () => {
   );
 };
 
-export default SetTable;
+export default MySetsTable;

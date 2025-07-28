@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import AddSet from './AddSet'; // adjust import path
-import SetTable from './SetTable';
+import MySetsTable from './MySetsTable';
 import PieceSearchTable from './PieceSearchTable';
 
 const TabContent = ({ activeTab }) => {
@@ -25,7 +25,7 @@ const TabContent = ({ activeTab }) => {
     case "Add Set":
       return <AddSet onSetAdded={(id) => console.log("Added set ID:", id)} />;
     case "My Sets":
-      return <SetTable />;
+      return <MySetsTable />;
     case "Lookup Piece":
       return <PieceSearchTable />;
     case "Wishlist":
