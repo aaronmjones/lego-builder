@@ -16,9 +16,9 @@ import debounce from 'lodash.debounce';
 import useUser from '../hooks/useUser';
 import { api } from '../api';
 
-const PieceSearchTable = () => {
+const PieceSearch = () => {
   const user = useUser();
-  const userId = user?.uid; // Assuming user object has uid property
+  const userId = user?.uid;
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -109,4 +109,4 @@ const PieceSearchTable = () => {
   );
 };
 
-export default PieceSearchTable;
+export default PieceSearch;

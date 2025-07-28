@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import AddSet from './AddSet'; // adjust import path
-import MySetsTable from './MySetsTable';
-import PieceSearchTable from './PieceSearchTable';
+import MySets from './MySets';
+import PieceSearch from './PieceSearch';
 
 const TabContent = ({ activeTab }) => {
   const [user, setUser] = useState(null);
@@ -25,9 +25,9 @@ const TabContent = ({ activeTab }) => {
     case "Add Set":
       return <AddSet onSetAdded={(id) => console.log("Added set ID:", id)} />;
     case "My Sets":
-      return <MySetsTable />;
+      return <MySets />;
     case "Lookup Piece":
-      return <PieceSearchTable />;
+      return <PieceSearch />;
     case "Wishlist":
       return <div>Your wishlist items.</div>;
     default:
