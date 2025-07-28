@@ -9,7 +9,7 @@ const App = () => {
   const user = useUser(); // <-- use the hook
   const [activeTab, setActiveTab] = useState("Add Set");
 
-  const tabs = ["Add Set", "My Sets", "Lookup Piece", "Wishlist"];
+  const tabs = ["Add Set", "My Sets", "Piece Search", "Wishlist"];
 
   return (
     <div className="app">

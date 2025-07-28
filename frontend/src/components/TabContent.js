@@ -26,7 +26,7 @@ const TabContent = ({ activeTab }) => {
       return <AddSet onSetAdded={(id) => console.log("Added set ID:", id)} />;
     case "My Sets":
       return <MySets />;
-    case "Lookup Piece":
+    case "Piece Search":
       return <PieceSearch />;
     case "Wishlist":
       return <div>Your wishlist items.</div>;
