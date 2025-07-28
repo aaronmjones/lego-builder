@@ -75,6 +75,7 @@ const MySets = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Image</TableCell>
+                  <TableCell>Set Number</TableCell>
                   <TableCell>Set Name</TableCell>
                   <TableCell>Progress</TableCell>
                   <TableCell>Owned / Total</TableCell>
@@ -100,6 +101,7 @@ const MySets = () => {
                           onError={e => { e.target.src = 'https://cdn.rebrickable.com/media/sets/placeholder.jpg'; }}
                         />
                       </TableCell>
+                      <TableCell>{set.setNumber}</TableCell>
                       <TableCell>{set.name}</TableCell>
                       <TableCell>
                         <div style={{ display: 'flex', alignItems: 'center', padding: '8px 0' }}>

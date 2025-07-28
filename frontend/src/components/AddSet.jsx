@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../api';
 import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import SetPiecesTable from './SetPiecesTable';
 import useUser from '../hooks/useUser';
@@ -29,6 +30,7 @@ function AddSet({ onSetAdded }) {
 
   // FIXME: WHen SetPiecesTable is diplayed, the TextField and Button position is not correct
   return (
+    <Stack spacing={2} sx={{ padding: 2 }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
       <TextField
         label="LEGO Set Number"
@@ -45,8 +47,9 @@ function AddSet({ onSetAdded }) {
       >
         Add Set
       </Button>
-      {addedSetId && <SetPiecesTable setId={addedSetId} setName={addedSetName} />}
     </div>
+      {addedSetId && <SetPiecesTable setId={addedSetId} setName={addedSetName} />}
+    </Stack>
   );
 }
 
