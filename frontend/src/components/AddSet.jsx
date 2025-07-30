@@ -9,7 +9,7 @@ import useUser from '../hooks/useUser';
 function AddSet({ onSetAdded }) {
   const user = useUser();
   const userId = user?.uid;
-  const [setNumber, setSetNumber] = useState(''); // FIXME: Do I need setNumber and addedSetId?
+  const [setNumber, setSetNumber] = useState('');
   const [addedSetId, setAddedSetId] = useState(null);
   const [addedSetName, setAddedSetName] = useState('');
 
