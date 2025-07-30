@@ -260,7 +260,7 @@ async function deleteSet(req, res) {
 
     // Delete from user_set_pieces
     await db.query(
-      `DELETE FROM user_set_pieces WHERE user_id = $1 set_id = $2`,
+      `DELETE FROM user_set_pieces WHERE user_id = $1 AND set_id = $2`,
       [userId, id]
     );
 

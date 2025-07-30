@@ -55,7 +55,7 @@ const MySets = () => {
 
     api.delete(`/sets/${setIdToDelete}`, { params: { userId } })
       .then(() => {
-        setSets(sets.filter(set => set.id !== setIdToDelete));
+        fetchSets(user.uid);
       })
       .catch(err => console.error('Failed to delete set:', err))
       .finally(() => {
