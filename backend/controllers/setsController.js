@@ -4,6 +4,8 @@ const { fetchSetParts, setExists, getSetName } = require('../utils/rebrickable')
 //console.log('API Key:', process.env.REBRICKABLE_API_KEY);
 //console.log('Imported fetchSetParts:', fetchSetParts);
 
+// FIXME: add set allows you to add multiple of the same set. maybe this would be a valid
+// feature, but the My Sets just shows the one set with twice as many pieces.
 async function addSet(req, res) {
   const { setNumber, userId } = req.body;
 
@@ -17,16 +19,19 @@ async function addSet(req, res) {
     }
 
     const pieces = await fetchSetParts(setNumber);
+    console.log(`Fetched ${pieces.length} pieces for set ${setNumber}`);
+
     let setId;
+    let newSet;
 
     // Try to insert the set, or get its set_id if it already exists
-    // FIXME: Get the set name from rebrickable; don't use "Set ${setNumber}"
     try {
       const setInsert = await db.query(
         'INSERT INTO lego_sets (set_number, name) VALUES ($1, $2) RETURNING set_id',
         [setNumber, setName]
       );
       setId = setInsert.rows[0].set_id;
+      newSet = true; // Indicate that this is a new set
     } catch (err) {
       if (err.code === '23505') {
         // Set already exists, get its set_id
@@ -35,54 +40,59 @@ async function addSet(req, res) {
           [setNumber]
         );
         setId = existingSet.rows[0].set_id;
+        newSet = false; // Indicate that this is an existing set
       } else {
         console.error('Database error:', err);
         return res.status(500).json({ message: 'Internal server error' });
       }
     }
 
+    console.log('Set ID determined:', setId, 'New Set:', newSet);
     // Always insert into user_lego_sets after setId is determined
+    // FIXME: insert date acquired?
     if (userId && setId) {
       await db.query(
         `INSERT INTO user_lego_sets (user_id, set_id)
-         VALUES ($1, $2)
-         ON CONFLICT (user_id, set_id) DO NOTHING`,
+         VALUES ($1, $2)`,
         [userId, setId]
       );
     }
+    //console.log('Inserted into user_lego_sets for userId:', userId, 'setId:', setId);
 
-    for (let piece of pieces) {
-      const partNum = piece.part.part_num;
-      const name = piece.part.name || 'Unnamed';
-      const color = piece.color.name;
-      const imageUrl = piece.part.part_img_url || '';
-      const quantity = piece.quantity;
+    if (newSet) {
+      for (let piece of pieces) {
+        const partNum = piece.part.part_num;
+        const name = piece.part.name || 'Unnamed';
+        const color = piece.color.name;
+        const imageUrl = piece.part.part_img_url || '';
+        const quantity = piece.quantity;
 
-      // Log the piece before inserting
-      console.log(`Inserting piece:`, {
-        partNum,
-        name,
-        color,
-        imageUrl,
-        quantity
-      });
+        // Log the piece before inserting
+        // console.log(`Inserting piece:`, {
+        //   partNum,
+        //   name,
+        //   color,
+        //   imageUrl,
+        //   quantity
+        // });
+        //console.log('Inserting piece:', partNum, name, color, imageUrl, quantity);
 
-      const pieceInsert = await db.query(
-        `INSERT INTO lego_pieces (part_num, name, color, image_url)
-         VALUES ($1, $2, $3, $4)
-         RETURNING piece_id`,
-        [partNum, name, color, imageUrl]
-      );
+        const pieceInsert = await db.query(
+          `INSERT INTO lego_pieces (part_num, name, color, image_url)
+          VALUES ($1, $2, $3, $4)
+          RETURNING piece_id`,
+          [partNum, name, color, imageUrl]
+        );
 
-      const pieceId = pieceInsert.rows[0].piece_id;
+        const pieceId = pieceInsert.rows[0].piece_id;
 
-      console.log('Inserting into set_pieces');
-      await db.query(
-        `INSERT INTO set_pieces (set_id, piece_id, required_qty)
-         VALUES ($1, $2, $3)`,
-        [setId, pieceId, quantity]
-      );
-    }
+        await db.query(
+          `INSERT INTO set_pieces (set_id, piece_id, required_qty)
+          VALUES ($1, $2, $3)`,
+          [setId, pieceId, quantity]
+        );
+      }
+    } // newSet
 
     res.status(201).json({ message: 'Set added', setId, setName });
   } catch (err) {
@@ -103,12 +113,12 @@ async function getSetPieces(req, res) {
      JOIN lego_pieces lp ON lp.piece_id = sp.piece_id
      LEFT JOIN user_set_pieces usp
      ON usp.set_id = sp.set_id AND usp.piece_id = sp.piece_id AND usp.user_id = $2
-     WHERE sp.set_id = $1`,
+     WHERE usp.user_set_id = $1`,
     [id, userId]
   );
 
-  console.log('Fetched pieces for set:', id, 'User ID:', userId);
-  console.log('Result:', result.rows);
+  //console.log('Fetched pieces for set:', id, 'User ID:', userId);
+  //console.log('Result:', result.rows);
   res.json(result.rows);
 }
 
@@ -141,7 +151,7 @@ async function getAllSetsWithProgress(req, res) {
   console.log('Fetching sets for userId:', userId);
   const result = await db.query(
     `SELECT 
-        s.set_id AS id,
+        user_set_id AS id,
         s.set_number,
         s.name,
         COALESCE(SUM(usp.owned_qty), 0) AS ownedpieces,
@@ -152,8 +162,8 @@ async function getAllSetsWithProgress(req, res) {
      LEFT JOIN user_set_pieces usp 
        ON usp.set_id = s.set_id AND usp.piece_id = sp.piece_id AND usp.user_id = $1
      WHERE uls.user_id = $1
-     GROUP BY s.set_id, s.set_number, s.name
-     ORDER BY s.set_id`,
+     GROUP BY uls.user_set_id, s.set_number, s.name
+     ORDER BY uls.user_set_id`,
     [userId]
   );
 
@@ -243,6 +253,7 @@ async function getMatchingNeededPieces(req, res) {
   }
 };
 
+// FIXME: delete doesn't seem to delete properly.
 async function deleteSet(req, res) {
   const { id } = req.params;
   const userId = req.query.userId;
