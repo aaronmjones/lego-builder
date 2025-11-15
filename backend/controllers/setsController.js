@@ -68,7 +68,7 @@ async function addSet(req, res) {
       });
 
       const pieceInsert = await db.query(
-        `INSERT INTO lego_pieces (part_num, name, color, image_url)
+        `INSERT INTO pieces (part_num, name, color, image_url)
          VALUES ($1, $2, $3, $4)
          RETURNING piece_id`,
         [partNum, name, color, imageUrl]
@@ -100,7 +100,7 @@ async function getSetPieces(req, res) {
             sp.required_qty,
             usp.owned_qty
      FROM set_pieces sp
-     JOIN lego_pieces lp ON lp.piece_id = sp.piece_id
+     JOIN pieces lp ON lp.piece_id = sp.piece_id
      LEFT JOIN user_set_pieces usp
      ON usp.set_id = sp.set_id AND usp.piece_id = sp.piece_id AND usp.user_id = $2
      WHERE sp.set_id = $1`,
@@ -188,7 +188,7 @@ async function getMatchingNeededPieces(req, res) {
         s.set_number,
         sp.required_qty,
         COALESCE(usp.owned_qty, 0) AS owned_qty
-      FROM lego_pieces p
+      FROM pieces p
       JOIN set_pieces sp ON p.piece_id = sp.piece_id
       JOIN lego_sets s ON s.set_id = sp.set_id
       JOIN user_lego_sets uls ON uls.set_id = s.set_id
@@ -276,9 +276,9 @@ async function deleteSet(req, res) {
     //   [id]
     // );
 
-    // // Delete from lego_pieces (optional, if no longer used)
+    // // Delete from pieces (optional, if no longer used)
     // await db.query(
-    //   `DELETE FROM lego_pieces WHERE piece_id NOT IN (SELECT piece_id FROM set_pieces)`,
+    //   `DELETE FROM pieces WHERE piece_id NOT IN (SELECT piece_id FROM set_pieces)`,
     //   []
     // );
 

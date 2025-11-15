@@ -14,7 +14,7 @@ echo "Creating tables in \"$DB_NAME\"..."
 psql -U "$DB_USER" -d "$DB_NAME" <<EOF
 SELECT * FROM lego_sets;
 
-SELECT * FROM lego_pieces;
+SELECT * FROM pieces;
 
 SELECT * FROM set_pieces;
 

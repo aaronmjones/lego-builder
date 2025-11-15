@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS lego_sets (
   name TEXT
 );
 
-CREATE TABLE IF NOT EXISTS lego_pieces (
+CREATE TABLE IF NOT EXISTS pieces (
   piece_id SERIAL PRIMARY KEY,
   part_num VARCHAR,
   name TEXT,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS lego_pieces (
 
 CREATE TABLE IF NOT EXISTS set_pieces (
   set_id INT REFERENCES lego_sets(set_id),
-  piece_id INT REFERENCES lego_pieces(piece_id),
+  piece_id INT REFERENCES pieces(piece_id),
   required_qty INT
 );
 

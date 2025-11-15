@@ -7,7 +7,7 @@ DB_HOST="localhost"
 DB_PORT="5432"
 
 # List of tables to truncate
-TABLES="lego_sets, lego_pieces, set_pieces, user_set_pieces"
+TABLES="lego_sets, pieces, set_pieces, user_set_pieces"
 
 # Build TRUNCATE SQL
 TRUNCATE_CMD="TRUNCATE $TABLES CASCADE;"
