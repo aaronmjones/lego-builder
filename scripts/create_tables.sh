@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS pieces (
   part_num VARCHAR,
   name TEXT,
   color TEXT,
-  image_url TEXT
+  image_url TEXT,
+  UNIQUE (part_num, name, color)
 );
 
 CREATE TABLE IF NOT EXISTS lego_sets (
@@ -29,7 +30,8 @@ CREATE TABLE IF NOT EXISTS lego_sets (
 CREATE TABLE IF NOT EXISTS set_pieces (
   set_id INT REFERENCES lego_sets(set_id),
   piece_id INT REFERENCES pieces(piece_id),
-  required_qty INT
+  required_qty INT,
+  UNIQUE (set_id, piece_id)
 );
 
 -- USERS

@@ -9,6 +9,7 @@ async function addSet(req, res) {
 
   try {
     // Get user_id (insert if not exists)
+    // Could this be simplified (see piece insertion with ON CONFLICT)?
     let userId;
     try {
       console.error('Inserting user: ', firebaseUid);
@@ -44,6 +45,7 @@ async function addSet(req, res) {
     let setId;
 
     // Get lego_set set_id (insert if not exists)
+    // Could this be simplified (see piece insertion with ON CONFLICT)?
     try {
       const setInsert = await db.query(
         'INSERT INTO lego_sets (set_number, name) VALUES ($1, $2) RETURNING set_id',
@@ -97,19 +99,22 @@ async function addSet(req, res) {
         quantity
       });
 
-      // FIXME: this causes duplicates if the same set is added multiple times
+      // Add piece to pieces table (if not exists)
       const pieceInsert = await db.query(
         `INSERT INTO pieces (part_num, name, color, image_url)
          VALUES ($1, $2, $3, $4)
+         ON CONFLICT (part_num, name, color)
+         DO UPDATE SET part_num = EXCLUDED.part_num  -- dummy update
          RETURNING piece_id`,
         [partNum, name, color, imageUrl]
       );
       const pieceId = pieceInsert.rows[0].piece_id;
 
-      // FIXME: this causes duplicates if the same set is added multiple times
+      // add piece to set_pieces (if not exists)
       await db.query(
         `INSERT INTO set_pieces (set_id, piece_id, required_qty)
-         VALUES ($1, $2, $3)`,
+         VALUES ($1, $2, $3)
+         ON CONFLICT (set_id, piece_id) DO NOTHING`,
         [setId, pieceId, quantity]
       );
 
