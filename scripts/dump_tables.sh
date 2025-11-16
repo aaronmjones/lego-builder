@@ -12,13 +12,22 @@ psql -U "$DB_USER" -c "CREATE DATABASE $DB_NAME"
 echo "Creating tables in \"$DB_NAME\"..."
 
 psql -U "$DB_USER" -d "$DB_NAME" <<EOF
+
+\echo lego_sets
 SELECT * FROM lego_sets;
 
+\echo pieces
 SELECT * FROM pieces;
 
+\echo set_pieces
 SELECT * FROM set_pieces;
 
-SELECT * FROM user_set_pieces;
+\echo users
+SELECT * FROM users;
 
-SELECT * FROM user_lego_sets;
+\echo user_builds
+SELECT * FROM user_builds;
+
+\echo build_pieces
+SELECT * FROM build_pieces;
 EOF

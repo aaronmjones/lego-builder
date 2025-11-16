@@ -10,17 +10,17 @@ import useUser from '../hooks/useUser';
 
 function SetPiecesTable({ setId, setName }) {
     const user = useUser();
-    const userId = user?.uid; // Assuming user object has uid property
-    console.log('Current userId:', userId); // <-- Add this line
+    const firebaseUid = user?.uid; // Assuming user object has uid property
+    console.log('Current firebaseUid:', firebaseUid); // <-- Add this line
     const [pieces, setPieces] = useState([]);
 
     useEffect(() => {
-        if (!userId) return;
-        api.get(`/sets/${setId}/pieces`, { params: { userId } })
+        if (!firebaseUid) return;
+        api.get(`/sets/${setId}/pieces`, { params: { firebaseUid } })
             .then((res) => setPieces(res.data));
-    }, [setId, userId]);
+    }, [setId, firebaseUid]);
 
-    const handleOwnedChange = (pieceId, value, userId) => {
+    const handleOwnedChange = (pieceId, value, firebaseUid) => {
         const parsedQty = Math.max(0, parseInt(value, 10) || 0);
         const piece = pieces.find(p => p.piece_id === pieceId);
         const maxQty = piece ? piece.required_qty : Infinity;
@@ -31,7 +31,7 @@ function SetPiecesTable({ setId, setName }) {
             setId,
             pieceId,
             owned_qty: finalQty,
-            userId: userId
+            firebaseUid: firebaseUid
         }).then(() => {
             setPieces((prev) =>
                 prev.map((p) =>

@@ -22,7 +22,7 @@ import DialogActions from '@mui/material/DialogActions';
 
 const MySets = () => {
   const user = useUser();
-  const userId = user?.uid;
+  const firebaseUid = user?.uid;
   
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,10 +30,10 @@ const MySets = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [setIdToDelete, setSetIdToDelete] = useState(null);
 
-  const fetchSets = (userId) => {
+  const fetchSets = (firebaseUid) => {
     setLoading(true);
-    console.log('Fetching sets for userId:', userId);
-    api.get('/sets', { params: { userId } })
+    console.log('Fetching sets for firebaseUid:', firebaseUid);
+    api.get('/sets', { params: { firebaseUid } })
       .then(res => setSets(res.data))
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
@@ -53,7 +53,7 @@ const MySets = () => {
   const handleDelete = () => {
     if (!setIdToDelete) return;
 
-    api.delete(`/sets/${setIdToDelete}`, { params: { userId } })
+    api.delete(`/sets/${setIdToDelete}`, { params: { firebaseUid } })
       .then(() => {
         fetchSets(user.uid);
       })

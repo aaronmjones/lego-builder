@@ -18,19 +18,19 @@ import { api } from '../api';
 
 const PieceSearch = () => {
   const user = useUser();
-  const userId = user?.uid;
+  const firebaseUid = user?.uid;
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Debounced search function
   const fetchResults = debounce(async (searchTerm) => {
-    if (!searchTerm || !userId) return;
+    if (!searchTerm || !firebaseUid) return;
 
     setLoading(true);
     try {
       const res = await api.get('/sets/pieces/search', {
-        params: { query: searchTerm, userId }
+        params: { query: searchTerm, firebaseUid }
       });
       setSearchResults(res.data);
     } catch (err) {
@@ -45,7 +45,7 @@ const PieceSearch = () => {
 
     // Cleanup debounce on unmount
     return () => fetchResults.cancel();
-  }, [query, userId]);
+  }, [query, firebaseUid]);
 
   return (
     <Box p={2}>

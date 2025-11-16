@@ -5,9 +5,33 @@ const { fetchSetParts, setExists, getSetName } = require('../utils/rebrickable')
 //console.log('Imported fetchSetParts:', fetchSetParts);
 
 async function addSet(req, res) {
-  const { setNumber, userId } = req.body;
+  const { setNumber, firebaseUid } = req.body;
 
   try {
+    // Get user_id (insert if not exists)
+    let userId;
+    try {
+      console.error('Inserting user: ', firebaseUid);
+      const setInsert = await db.query(
+        'INSERT INTO users (firebase_uid) VALUES ($1) RETURNING user_id',
+        [firebaseUid]
+      );
+      userId = setInsert.rows[0].user_id;
+    } catch (err) {
+      if (err.code === '23505') {
+        // User already exists, get user_id
+        const existingUser = await db.query(
+          'SELECT user_id FROM users WHERE firebase_uid = $1',
+          [firebaseUid]
+        );
+        userId = existingUser.rows[0].user_id;
+      } else {
+        console.error('Database error:', err);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+    }
+
+    // Check if rebrickable set exists and get set name
     if (!setExists(setNumber)) {
       return res.status(400).json({ message: 'Set does not exist' });
     }
@@ -19,8 +43,7 @@ async function addSet(req, res) {
     const pieces = await fetchSetParts(setNumber);
     let setId;
 
-    // Try to insert the set, or get its set_id if it already exists
-    // FIXME: Get the set name from rebrickable; don't use "Set ${setNumber}"
+    // Get lego_set set_id (insert if not exists)
     try {
       const setInsert = await db.query(
         'INSERT INTO lego_sets (set_number, name) VALUES ($1, $2) RETURNING set_id',
@@ -41,14 +64,21 @@ async function addSet(req, res) {
       }
     }
 
-    // Always insert into user_lego_sets after setId is determined
-    if (userId && setId) {
-      await db.query(
-        `INSERT INTO user_lego_sets (user_id, set_id)
-         VALUES ($1, $2)
-         ON CONFLICT (user_id, set_id) DO NOTHING`,
+    // Insert new entry in user_builds
+    let buildId;
+    if (firebaseUid && setId) {
+      const userBuildInsert = await db.query(
+        `INSERT INTO user_builds (user_id, set_id, instance_number)
+         SELECT
+           $1,
+           $2,
+           COALESCE(MAX(instance_number) + 1, 1)
+        FROM user_builds
+        WHERE user_id = $1 AND set_id = $2
+        RETURNING build_id;`,
         [userId, setId]
       );
+      buildId = userBuildInsert.rows[0].build_id;
     }
 
     for (let piece of pieces) {
@@ -67,21 +97,30 @@ async function addSet(req, res) {
         quantity
       });
 
+      // FIXME: this causes duplicates if the same set is added multiple times
       const pieceInsert = await db.query(
         `INSERT INTO pieces (part_num, name, color, image_url)
          VALUES ($1, $2, $3, $4)
          RETURNING piece_id`,
         [partNum, name, color, imageUrl]
       );
-
       const pieceId = pieceInsert.rows[0].piece_id;
 
-      console.log('Inserting into set_pieces');
+      // FIXME: this causes duplicates if the same set is added multiple times
       await db.query(
         `INSERT INTO set_pieces (set_id, piece_id, required_qty)
          VALUES ($1, $2, $3)`,
         [setId, pieceId, quantity]
       );
+
+      if (buildId) {
+        await db.query(
+          `INSERT INTO build_pieces (build_id, piece_id)
+          VALUES ($1, $2)`,
+          [buildId, pieceId]
+        );
+      }
+
     }
 
     res.status(201).json({ message: 'Set added', setId, setName });
@@ -93,7 +132,7 @@ async function addSet(req, res) {
 
 async function getSetPieces(req, res) {
   const { id } = req.params;
-  const userId = req.query.userId;
+  const firebaseUid = req.query.firebaseUid;
 
   const result = await db.query(
     `SELECT lp.piece_id, lp.name, lp.color, lp.image_url,
@@ -104,10 +143,10 @@ async function getSetPieces(req, res) {
      LEFT JOIN user_set_pieces usp
      ON usp.set_id = sp.set_id AND usp.piece_id = sp.piece_id AND usp.user_id = $2
      WHERE sp.set_id = $1`,
-    [id, userId]
+    [id, firebaseUid]
   );
 
-  console.log('Fetched pieces for set:', id, 'User ID:', userId);
+  console.log('Fetched pieces for set:', id, 'User ID:', firebaseUid);
   console.log('Result:', result.rows);
   res.json(result.rows);
 }
@@ -115,16 +154,16 @@ async function getSetPieces(req, res) {
 async function updateOwnedPiece(req, res) {
   console.log('updateOwnedPice');
 
-  const { setId, pieceId, owned_qty, userId } = req.body;
+  const { setId, pieceId, owned_qty, firebaseUid } = req.body;
 
   console.log('Updating owned piece:', {
-    setId, userId, pieceId, owned_qty });
+    setId, firebaseUid, pieceId, owned_qty });
   await db.query(
     `INSERT INTO user_set_pieces (user_id, set_id, piece_id, owned_qty)
      VALUES ($1, $2, $3, $4)
      ON CONFLICT (user_id, set_id, piece_id)
      DO UPDATE SET owned_qty = $4`,
-    [userId, setId, pieceId, owned_qty]
+    [firebaseUid, setId, pieceId, owned_qty]
   );
 
   res.json({ message: 'Owned quantity updated' });
@@ -132,13 +171,13 @@ async function updateOwnedPiece(req, res) {
 
 async function getAllSetsWithProgress(req, res) {
   console.log('Fetching user sets with progress');
-  const userId = req.query.userId;
+  const firebaseUid = req.query.firebaseUid;
 
-  if (!userId) {
-    return res.status(400).json({ error: 'Missing userId' });
+  if (!firebaseUid) {
+    return res.status(400).json({ error: 'Missing firebaseUid' });
   }
 
-  console.log('Fetching sets for userId:', userId);
+  console.log('Fetching sets for firebaseUid:', firebaseUid);
   const result = await db.query(
     `SELECT 
         s.set_id AS id,
@@ -154,7 +193,7 @@ async function getAllSetsWithProgress(req, res) {
      WHERE uls.user_id = $1
      GROUP BY s.set_id, s.set_number, s.name
      ORDER BY s.set_id`,
-    [userId]
+    [firebaseUid]
   );
 
   console.log('Fetched sets:', result.rows);
@@ -169,12 +208,12 @@ async function getAllSetsWithProgress(req, res) {
 }
 
 async function getMatchingNeededPieces(req, res) {
-  const { query, userId } = req.query;
+  const { query, firebaseUid } = req.query;
 
-  console.log('Searching pieces for userId:', userId, 'with query:', query);
+  console.log('Searching pieces for firebaseUid:', firebaseUid, 'with query:', query);
 
-  if (!userId || !query) {
-    return res.status(400).json({ error: 'Missing userId or query' });
+  if (!firebaseUid || !query) {
+    return res.status(400).json({ error: 'Missing firebaseUid or query' });
   }
 
   try {
@@ -200,7 +239,7 @@ async function getMatchingNeededPieces(req, res) {
         AND p.name ILIKE '%' || $2 || '%'
     `;
 
-    const { rows } = await db.query(sql, [userId, query]);
+    const { rows } = await db.query(sql, [firebaseUid, query]);
 
     // Group results by piece
     const resultMap = new Map();
@@ -245,23 +284,23 @@ async function getMatchingNeededPieces(req, res) {
 
 async function deleteSet(req, res) {
   const { id } = req.params;
-  const userId = req.query.userId;
+  const firebaseUid = req.query.firebaseUid;
 
-  if (!userId) {
-    return res.status(400).json({ error: 'Missing userId' });
+  if (!firebaseUid) {
+    return res.status(400).json({ error: 'Missing firebaseUid' });
   }
 
   try {
     // Delete from user_lego_sets
     await db.query(
       `DELETE FROM user_lego_sets WHERE user_id = $1 AND set_id = $2`,
-      [userId, id]
+      [firebaseUid, id]
     );
 
     // Delete from user_set_pieces
     await db.query(
       `DELETE FROM user_set_pieces WHERE user_id = $1 AND set_id = $2`,
-      [userId, id]
+      [firebaseUid, id]
     );
 
     // // Delete from lego_sets
