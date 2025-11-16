@@ -80,18 +80,18 @@ function SetPiecesTable({ buildId, setName }) {
                                     <IconButton
                                         size="small"
                                         onClick={() => handleDecrement(piece)}
-                                        disabled={(piece.quantity_found || 0) <= 0}
+                                        disabled={(piece.owned_qty || 0) <= 0}
                                         sx={{ marginRight: 1 }}
                                     >
                                         <RemoveIcon />
                                     </IconButton>
                                     <span style={{ minWidth: 32, textAlign: 'center', fontSize: 16 }}>
-                                        {piece.quantity_found || 0}
+                                        {piece.owned_qty || 0}
                                     </span>
                                     <IconButton
                                         size="small"
                                         onClick={() => handleIncrement(piece)}
-                                        disabled={(piece.quantity_found || 0) >= piece.required_qty}
+                                        disabled={(piece.owned_qty || 0) >= piece.required_qty}
                                         sx={{ marginLeft: 1 }}
                                     >
                                         <AddIcon />

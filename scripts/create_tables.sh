@@ -60,18 +60,3 @@ CREATE TABLE build_pieces (
 EOF
 
 echo "✅ Database and tables created successfully."
-
-#CREATE TABLE IF NOT EXISTS user_set_pieces (
-#  user_id VARCHAR,
-#  set_id INT,
-#  piece_id INT,
-#  owned_qty INT,
-#  PRIMARY KEY (user_id, set_id, piece_id)
-#);
-#
-#CREATE TABLE IF NOT EXISTS user_lego_sets (
-#  user_id VARCHAR,
-#  set_id INT REFERENCES lego_sets(set_id),
-#  acquired_date DATE,
-#  PRIMARY KEY (user_id, set_id)
-#);

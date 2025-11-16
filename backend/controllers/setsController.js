@@ -147,7 +147,7 @@ async function getSetPieces(req, res) {
       p.color,
       p.image_url,
       sp.required_qty AS required_qty,
-      COALESCE(bp.quantity_found, 0) AS quantity_found
+      COALESCE(bp.quantity_found, 0) AS owned_qty
     FROM users u
     JOIN user_builds ub
        ON ub.user_id = u.user_id
@@ -169,19 +169,21 @@ async function getSetPieces(req, res) {
   res.json(result.rows);
 }
 
+// TODO: Pass in current owned quantity and new owned quantity. Check to make
+// sure current quantity has not changed since last fetch.
 async function updateOwnedPiece(req, res) {
   console.log('updateOwnedPice');
 
-  const { setId, pieceId, owned_qty, firebaseUid } = req.body;
+  const { buildId, pieceId, owned_qty, firebaseUid } = req.body;
 
   console.log('Updating owned piece:', {
-    setId, firebaseUid, pieceId, owned_qty });
+    buildId, firebaseUid, pieceId, owned_qty });
   await db.query(
-    `INSERT INTO user_set_pieces (user_id, set_id, piece_id, owned_qty)
-     VALUES ($1, $2, $3, $4)
-     ON CONFLICT (user_id, set_id, piece_id)
-     DO UPDATE SET owned_qty = $4`,
-    [firebaseUid, setId, pieceId, owned_qty]
+    `UPDATE build_pieces
+     SET quantity_found = $3
+     WHERE build_id = $1
+      AND piece_id = $2`,
+    [buildId, pieceId, owned_qty]
   );
 
   res.json({ message: 'Owned quantity updated' });
