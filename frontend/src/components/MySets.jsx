@@ -29,6 +29,7 @@ const MySets = () => {
   const [selectedBuildId, setSelectedBuildId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [buildIdToDelete, setSetIdToDelete] = useState(null);
+  const [hoveredBuildId, setHoveredBuildId] = useState(null); // <--- added
 
   const fetchSets = (firebaseUid) => {
     setLoading(true);
@@ -93,13 +94,43 @@ const MySets = () => {
                       style={{ cursor: 'pointer' }}
                       onClick={() => setSelectedBuildId(set.buildId)}
                     >
-                      <TableCell>
-                        <img
-                          src={imageUrl}
-                          alt={set.name}
-                          style={{ width: 60, height: 60, objectFit: 'contain', borderRadius: 8 }}
-                          onError={e => { e.target.src = 'https://cdn.rebrickable.com/media/sets/placeholder.jpg'; }}
-                        />
+                      <TableCell style={{ position: 'relative', overflow: 'visible', width: 80 }}>
+                        <div style={{ position: 'relative' }}>
+                          <img
+                            src={imageUrl}
+                            alt={set.name}
+                            style={{
+                              width: 60,
+                              height: 60,
+                              objectFit: 'contain',
+                              borderRadius: 8,
+                              transition: 'transform 150ms ease, box-shadow 150ms ease',
+                              cursor: 'zoom-in',
+                              zIndex: 1
+                            }}
+                            onMouseEnter={() => setHoveredBuildId(set.buildId)}
+                            onMouseLeave={() => setHoveredBuildId(null)}
+                            onError={e => { e.target.src = 'https://cdn.rebrickable.com/media/sets/placeholder.jpg'; }}
+                          />
+                          {hoveredBuildId === set.buildId && (
+                            <img
+                              src={imageUrl}
+                              alt={set.name}
+                              style={{
+                                position: 'absolute',
+                                left: 70,
+                                top: -20,
+                                width: 200,
+                                height: 200,
+                                objectFit: 'contain',
+                                borderRadius: 8,
+                                boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+                                zIndex: 10,
+                                pointerEvents: 'none'
+                              }}
+                            />
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>{set.setNumber}</TableCell>
                       <TableCell>{set.name}</TableCell>
