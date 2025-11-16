@@ -46,25 +46,15 @@ async function addSet(req, res) {
 
     // Get lego_set set_id (insert if not exists)
     // Could this be simplified (see piece insertion with ON CONFLICT)?
-    try {
-      const setInsert = await db.query(
-        'INSERT INTO lego_sets (set_number, name) VALUES ($1, $2) RETURNING set_id',
-        [setNumber, setName]
-      );
-      setId = setInsert.rows[0].set_id;
-    } catch (err) {
-      if (err.code === '23505') {
-        // Set already exists, get its set_id
-        const existingSet = await db.query(
-          'SELECT set_id FROM lego_sets WHERE set_number = $1',
-          [setNumber]
-        );
-        setId = existingSet.rows[0].set_id;
-      } else {
-        console.error('Database error:', err);
-        return res.status(500).json({ message: 'Internal server error' });
-      }
-    }
+    const setInsert = await db.query(
+      `INSERT INTO lego_sets (set_number, name)
+        VALUES ($1, $2)
+        ON CONFLICT (set_number)
+        DO UPDATE SET name = EXCLUDED.name -- // dummy update to avoid error
+        RETURNING set_id`,
+      [setNumber, setName]
+    );
+    setId = setInsert.rows[0].set_id;
 
     // Insert new entry in user_builds
     let buildId;
@@ -128,7 +118,7 @@ async function addSet(req, res) {
 
     }
 
-    res.status(201).json({ message: 'Set added', setId, setName });
+    res.status(201).json({ message: 'Set added', buildId, setId, setName });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Failed to add set' });
@@ -140,33 +130,49 @@ async function getSetPieces(req, res) {
   const { id } = req.params; // build id
   const firebaseUid = req.query.firebaseUid;
 
-  const result = await db.query(
-    `SELECT
-      p.piece_id,
-      p.name,
-      p.color,
-      p.image_url,
-      sp.required_qty AS required_qty,
-      COALESCE(bp.quantity_found, 0) AS owned_qty
-    FROM users u
-    JOIN user_builds ub
-       ON ub.user_id = u.user_id
-    JOIN set_pieces sp
-       ON sp.set_id = ub.set_id
-    JOIN pieces p
-       ON p.piece_id = sp.piece_id
-    LEFT JOIN build_pieces bp
-       ON bp.build_id = ub.build_id
-      AND bp.piece_id = sp.piece_id
-    WHERE ub.build_id = $1
-      AND u.firebase_uid = $2
-    ORDER BY p.piece_id;`,
-    [id, firebaseUid]
-  );
+  console.log('getSetPieces req.params:', req.params, 'req.query:', req.query);
 
-  console.log('Fetched pieces for set:', id, 'User ID:', firebaseUid);
-  console.log('Result:', result.rows);
-  res.json(result.rows);
+  // validate id
+  const buildId = Number(id);
+  if (!id || Number.isNaN(buildId)) {
+    return res.status(400).json({ error: 'Missing or invalid build id' });
+  }
+  if (!firebaseUid) {
+    return res.status(400).json({ error: 'Missing firebaseUid' });
+  }
+
+  try {
+    const result = await db.query(
+      `SELECT
+        p.piece_id,
+        p.name,
+        p.color,
+        p.image_url,
+        sp.required_qty AS required_qty,
+        COALESCE(bp.quantity_found, 0) AS owned_qty
+      FROM users u
+      JOIN user_builds ub
+         ON ub.user_id = u.user_id
+      JOIN set_pieces sp
+         ON sp.set_id = ub.set_id
+      JOIN pieces p
+         ON p.piece_id = sp.piece_id
+      LEFT JOIN build_pieces bp
+         ON bp.build_id = ub.build_id
+        AND bp.piece_id = sp.piece_id
+      WHERE ub.build_id = $1
+        AND u.firebase_uid = $2
+      ORDER BY p.piece_id;`,
+      [buildId, firebaseUid]
+    );
+
+    console.log('Fetched pieces for set:', buildId, 'User ID:', firebaseUid);
+    console.log('Result:', result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('getSetPieces error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 }
 
 // TODO: Pass in current owned quantity and new owned quantity. Check to make
@@ -307,6 +313,7 @@ async function getMatchingNeededPieces(req, res) {
   }
 };
 
+// TODO: Rename to deleteBuild
 async function deleteSet(req, res) {
   const { id } = req.params;
   const firebaseUid = req.query.firebaseUid;
@@ -316,35 +323,10 @@ async function deleteSet(req, res) {
   }
 
   try {
-    // Delete from user_lego_sets
     await db.query(
-      `DELETE FROM user_lego_sets WHERE user_id = $1 AND set_id = $2`,
-      [firebaseUid, id]
+      `DELETE FROM user_builds WHERE build_id = $1`,
+      [id]
     );
-
-    // Delete from user_set_pieces
-    await db.query(
-      `DELETE FROM user_set_pieces WHERE user_id = $1 AND set_id = $2`,
-      [firebaseUid, id]
-    );
-
-    // // Delete from lego_sets
-    // await db.query(
-    //   `DELETE FROM lego_sets WHERE set_id = $1`,
-    //   [id]
-    // );
-
-    // // Delete from set_pieces
-    // await db.query(
-    //   `DELETE FROM set_pieces WHERE set_id = $1`,
-    //   [id]
-    // );
-
-    // // Delete from pieces (optional, if no longer used)
-    // await db.query(
-    //   `DELETE FROM pieces WHERE piece_id NOT IN (SELECT piece_id FROM set_pieces)`,
-    //   []
-    // );
 
     res.json({ message: 'Set deleted successfully' });
   } catch (err) {

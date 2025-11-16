@@ -10,16 +10,16 @@ function AddSet({ onSetAdded }) {
   const user = useUser();
   const firebaseUid = user?.uid;
   const [setNumber, setSetNumber] = useState('');
-  const [addedSetId, setAddedSetId] = useState(null);
+  const [addedBuildId, setAddedBuildId] = useState(null);
   const [addedSetName, setAddedSetName] = useState('');
 
   const handleSubmit = async () => {
     try {
       const res = await api.post('/sets', { setNumber, firebaseUid });
-      const setId = res.data.setId;
-      setAddedSetId(setId); // Save the new set ID
+      const buildId = res.data.buildId;
+      setAddedBuildId(buildId); // Save the new set ID
       setAddedSetName(res.data.setName); // Save the new set name
-      onSetAdded(setId); // Notify parent
+      onSetAdded(buildId); // Notify parent
     } catch (error) {
       console.error('Failed to add set:', error.response.data.message);
 
@@ -48,7 +48,7 @@ function AddSet({ onSetAdded }) {
         Add Set
       </Button>
     </div>
-      {addedSetId && <SetPiecesTable setId={addedSetId} setName={addedSetName} />}
+      {addedBuildId && <SetPiecesTable buildId={addedBuildId} setName={addedSetName} />}
     </Stack>
   );
 }

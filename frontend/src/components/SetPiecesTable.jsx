@@ -16,6 +16,7 @@ function SetPiecesTable({ buildId, setName }) {
 
     useEffect(() => {
         if (!firebaseUid) return;
+        console.log(`Fetching pieces for buildId: ${buildId} and firebaseUid: ${firebaseUid}`); // FIXME: remove debug log
         api.get(`/sets/${buildId}/pieces`, { params: { firebaseUid } })
             .then((res) => setPieces(res.data));
     }, [buildId, firebaseUid]);
