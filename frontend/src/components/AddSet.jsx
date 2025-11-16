@@ -28,7 +28,7 @@ function AddSet({ onSetAdded }) {
     }
   };
 
-  // FIXME: WHen SetPiecesTable is diplayed, the TextField and Button position is not correct
+  // FIXME: When SetPiecesTable is diplayed, the TextField and Button position is not correct
   return (
     <Stack spacing={2} sx={{ padding: 2 }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>

@@ -88,10 +88,10 @@ const MySets = () => {
                   const imageUrl = set.imageUrl || `https://cdn.rebrickable.com/media/sets/${set.setNumber}.jpg`;
                   return (
                     <TableRow
-                      key={set.id}
+                      key={set.build_id}
                       hover
                       style={{ cursor: 'pointer' }}
-                      onClick={() => setSelectedSetId(set.id)}
+                      onClick={() => setSelectedSetId(set.build_id)}
                     >
                       <TableCell>
                         <img
@@ -128,7 +128,7 @@ const MySets = () => {
                         <IconButton
                           onClick={(e) => {
                             e.stopPropagation(); // prevent row click
-                            setSetIdToDelete(set.id); // store which set to delete
+                            setSetIdToDelete(set.build_id); // store which set to delete
                             setDeleteDialogOpen(true); // open confirmation dialog
                           }}
                           aria-label="delete"
@@ -156,7 +156,7 @@ const MySets = () => {
           {selectedSetId && (
             <SetPiecesTable
               setId={selectedSetId}
-              setName={sets.find(set => set.id === selectedSetId)?.name}
+              setName={sets.find(set => set.build_id === selectedSetId)?.name}
             />
           )}
         </div>

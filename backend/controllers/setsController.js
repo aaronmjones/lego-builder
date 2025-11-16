@@ -184,20 +184,23 @@ async function getAllSetsWithProgress(req, res) {
 
   console.log('Fetching sets for firebaseUid:', firebaseUid);
   const result = await db.query(
-    `SELECT 
-        s.set_id AS id,
-        s.set_number,
-        s.name,
-        COALESCE(SUM(usp.owned_qty), 0) AS ownedpieces,
-        COALESCE(SUM(sp.required_qty), 0) AS totalpieces
-     FROM user_lego_sets uls
-     JOIN lego_sets s ON uls.set_id = s.set_id
-     JOIN set_pieces sp ON s.set_id = sp.set_id
-     LEFT JOIN user_set_pieces usp 
-       ON usp.set_id = s.set_id AND usp.piece_id = sp.piece_id AND usp.user_id = $1
-     WHERE uls.user_id = $1
-     GROUP BY s.set_id, s.set_number, s.name
-     ORDER BY s.set_id`,
+    `SELECT
+      ub.build_id,
+      ls.set_id,
+      ls.set_number,
+      ls.name,
+      COALESCE(SUM(bp.quantity_found), 0) AS ownedpieces,
+      COALESCE(SUM(sp.required_qty), 0) AS totalpieces
+    FROM users u
+    JOIN user_builds ub ON ub.user_id = u.user_id
+    JOIN lego_sets ls ON ub.set_id = ls.set_id
+    JOIN set_pieces sp ON ls.set_id = sp.set_id
+    LEFT JOIN build_pieces bp
+      ON bp.build_id = ub.build_id
+     AND bp.piece_id = sp.piece_id
+    WHERE u.firebase_uid = $1
+    GROUP BY ub.build_id, ls.set_id, ls.set_number, ls.name
+    ORDER BY ls.set_id;`,
     [firebaseUid]
   );
 
