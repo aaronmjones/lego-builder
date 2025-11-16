@@ -26,9 +26,9 @@ const MySets = () => {
   
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSetId, setSelectedSetId] = useState(null);
+  const [selectedBuildId, setSelectedBuildId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [setIdToDelete, setSetIdToDelete] = useState(null);
+  const [buildIdToDelete, setSetIdToDelete] = useState(null);
 
   const fetchSets = (firebaseUid) => {
     setLoading(true);
@@ -46,14 +46,14 @@ const MySets = () => {
   }, [user]);
 
   const handleBack = () => {
-    setSelectedSetId(null);
+    setSelectedBuildId(null);
     fetchSets(user.uid); // Refetch sets when going back
   };
 
   const handleDelete = () => {
-    if (!setIdToDelete) return;
+    if (!buildIdToDelete) return;
 
-    api.delete(`/sets/${setIdToDelete}`, { params: { firebaseUid } })
+    api.delete(`/sets/${buildIdToDelete}`, { params: { firebaseUid } })
       .then(() => {
         fetchSets(user.uid);
       })
@@ -68,7 +68,7 @@ const MySets = () => {
 
   return (
     <div style={{ position: 'relative', minHeight: 400 }}>
-      <Slide direction="right" in={!selectedSetId} mountOnEnter unmountOnExit>
+      <Slide direction="right" in={!selectedBuildId} mountOnEnter unmountOnExit>
         <div style={{ position: 'absolute', width: '100%' }}>
           <TableContainer component={Paper}>
             <Table>
@@ -88,10 +88,10 @@ const MySets = () => {
                   const imageUrl = set.imageUrl || `https://cdn.rebrickable.com/media/sets/${set.setNumber}.jpg`;
                   return (
                     <TableRow
-                      key={set.build_id}
+                      key={set.buildId}
                       hover
                       style={{ cursor: 'pointer' }}
-                      onClick={() => setSelectedSetId(set.build_id)}
+                      onClick={() => setSelectedBuildId(set.buildId)}
                     >
                       <TableCell>
                         <img
@@ -128,7 +128,7 @@ const MySets = () => {
                         <IconButton
                           onClick={(e) => {
                             e.stopPropagation(); // prevent row click
-                            setSetIdToDelete(set.build_id); // store which set to delete
+                            setSetIdToDelete(set.buildId); // store which set to delete
                             setDeleteDialogOpen(true); // open confirmation dialog
                           }}
                           aria-label="delete"
@@ -144,7 +144,7 @@ const MySets = () => {
           </TableContainer>
         </div>
       </Slide>
-      <Slide direction="left" in={!!selectedSetId} mountOnEnter unmountOnExit>
+      <Slide direction="left" in={!!selectedBuildId} mountOnEnter unmountOnExit>
         <div style={{ position: 'absolute', width: '100%' }}>
           <Button
             variant="outlined"
@@ -153,10 +153,10 @@ const MySets = () => {
           >
             Back
           </Button>
-          {selectedSetId && (
+          {selectedBuildId && (
             <SetPiecesTable
-              setId={selectedSetId}
-              setName={sets.find(set => set.build_id === selectedSetId)?.name}
+              buildId={selectedBuildId}
+              setName={sets.find(set => set.buildId === selectedBuildId)?.name}
             />
           )}
         </div>

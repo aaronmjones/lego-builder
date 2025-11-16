@@ -135,19 +135,32 @@ async function addSet(req, res) {
   }
 }
 
+// TODO: Rename to getBuildPieces
 async function getSetPieces(req, res) {
-  const { id } = req.params;
+  const { id } = req.params; // build id
   const firebaseUid = req.query.firebaseUid;
 
   const result = await db.query(
-    `SELECT lp.piece_id, lp.name, lp.color, lp.image_url,
-            sp.required_qty,
-            usp.owned_qty
-     FROM set_pieces sp
-     JOIN pieces lp ON lp.piece_id = sp.piece_id
-     LEFT JOIN user_set_pieces usp
-     ON usp.set_id = sp.set_id AND usp.piece_id = sp.piece_id AND usp.user_id = $2
-     WHERE sp.set_id = $1`,
+    `SELECT
+      p.piece_id,
+      p.name,
+      p.color,
+      p.image_url,
+      sp.required_qty AS required_qty,
+      COALESCE(bp.quantity_found, 0) AS quantity_found
+    FROM users u
+    JOIN user_builds ub
+       ON ub.user_id = u.user_id
+    JOIN set_pieces sp
+       ON sp.set_id = ub.set_id
+    JOIN pieces p
+       ON p.piece_id = sp.piece_id
+    LEFT JOIN build_pieces bp
+       ON bp.build_id = ub.build_id
+      AND bp.piece_id = sp.piece_id
+    WHERE ub.build_id = $1
+      AND u.firebase_uid = $2
+    ORDER BY p.piece_id;`,
     [id, firebaseUid]
   );
 
@@ -174,6 +187,7 @@ async function updateOwnedPiece(req, res) {
   res.json({ message: 'Owned quantity updated' });
 }
 
+// TODO: Rename to getUserBuildsWithProgress
 async function getAllSetsWithProgress(req, res) {
   console.log('Fetching user sets with progress');
   const firebaseUid = req.query.firebaseUid;
@@ -207,7 +221,8 @@ async function getAllSetsWithProgress(req, res) {
   console.log('Fetched sets:', result.rows);
 
   res.json(result.rows.map(row => ({
-    id: row.id,
+    buildId: row.build_id,
+    setId: row.set_id,
     setNumber: row.set_number,
     name: row.name,
     ownedPieces: Number(row.ownedpieces),

@@ -8,7 +8,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import useUser from '../hooks/useUser';
 
-function SetPiecesTable({ setId, setName }) {
+function SetPiecesTable({ buildId, setName }) {
     const user = useUser();
     const firebaseUid = user?.uid; // Assuming user object has uid property
     console.log('Current firebaseUid:', firebaseUid); // <-- Add this line
@@ -16,9 +16,9 @@ function SetPiecesTable({ setId, setName }) {
 
     useEffect(() => {
         if (!firebaseUid) return;
-        api.get(`/sets/${setId}/pieces`, { params: { firebaseUid } })
+        api.get(`/sets/${buildId}/pieces`, { params: { firebaseUid } })
             .then((res) => setPieces(res.data));
-    }, [setId, firebaseUid]);
+    }, [buildId, firebaseUid]);
 
     const handleOwnedChange = (pieceId, value, firebaseUid) => {
         const parsedQty = Math.max(0, parseInt(value, 10) || 0);
@@ -28,7 +28,7 @@ function SetPiecesTable({ setId, setName }) {
 
         console.log(`Updating piece ${pieceId} owned quantity to ${finalQty}`);
         api.put('/sets/piece', {
-            setId,
+            buildId,
             pieceId,
             owned_qty: finalQty,
             firebaseUid: firebaseUid
@@ -80,18 +80,18 @@ function SetPiecesTable({ setId, setName }) {
                                     <IconButton
                                         size="small"
                                         onClick={() => handleDecrement(piece)}
-                                        disabled={(piece.owned_qty || 0) <= 0}
+                                        disabled={(piece.quantity_found || 0) <= 0}
                                         sx={{ marginRight: 1 }}
                                     >
                                         <RemoveIcon />
                                     </IconButton>
                                     <span style={{ minWidth: 32, textAlign: 'center', fontSize: 16 }}>
-                                        {piece.owned_qty || 0}
+                                        {piece.quantity_found || 0}
                                     </span>
                                     <IconButton
                                         size="small"
                                         onClick={() => handleIncrement(piece)}
-                                        disabled={(piece.owned_qty || 0) >= piece.required_qty}
+                                        disabled={(piece.quantity_found || 0) >= piece.required_qty}
                                         sx={{ marginLeft: 1 }}
                                     >
                                         <AddIcon />
