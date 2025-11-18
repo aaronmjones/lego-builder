@@ -249,25 +249,32 @@ async function getMatchingNeededPieces(req, res) {
 
   try {
     const sql = `
-      SELECT
-        p.piece_id,
-        p.name AS piece_name,
-        p.image_url AS piece_img,
-        s.set_id,
-        s.name AS set_name,
-        s.set_number,
-        sp.required_qty,
-        COALESCE(usp.owned_qty, 0) AS owned_qty
-      FROM pieces p
-      JOIN set_pieces sp ON p.piece_id = sp.piece_id
-      JOIN lego_sets s ON s.set_id = sp.set_id
-      JOIN user_lego_sets uls ON uls.set_id = s.set_id
-      LEFT JOIN user_set_pieces usp
-        ON usp.set_id = s.set_id
-        AND usp.piece_id = p.piece_id
-        AND usp.user_id = uls.user_id
-      WHERE uls.user_id = $1
-        AND p.name ILIKE '%' || $2 || '%'
+    SELECT
+      p.piece_id,
+      p.name AS piece_name,
+      p.image_url AS piece_img,
+      s.set_id,
+      s.name AS set_name,
+      s.set_number,
+      sp.required_qty,
+      COALESCE(bp.quantity_found, 0) AS quantity_found,
+      ub.build_id,
+      ub.instance_number
+    FROM users u
+    JOIN user_builds ub
+      ON u.user_id = ub.user_id
+    JOIN lego_sets s
+      ON s.set_id = ub.set_id
+    JOIN set_pieces sp
+      ON sp.set_id = s.set_id
+    JOIN pieces p
+      ON p.piece_id = sp.piece_id
+    LEFT JOIN build_pieces bp
+      ON bp.build_id = ub.build_id       -- NEW: join via build_id
+      AND bp.piece_id = p.piece_id       -- piece match
+    WHERE u.firebase_uid = $1
+      AND p.name ILIKE '%' || $2 || '%'
+    ORDER BY ub.build_id, p.piece_id;
     `;
 
     const { rows } = await db.query(sql, [firebaseUid, query]);
