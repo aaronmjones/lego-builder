@@ -252,6 +252,7 @@ async function getMatchingNeededPieces(req, res) {
     SELECT
       p.piece_id,
       p.name AS piece_name,
+      p.color AS piece_color,
       p.image_url AS piece_img,
       s.set_id,
       s.name AS set_name,
@@ -286,6 +287,7 @@ async function getMatchingNeededPieces(req, res) {
       const {
         piece_id,
         piece_name,
+        piece_color,
         piece_img,
         set_id,
         set_name,
@@ -298,6 +300,7 @@ async function getMatchingNeededPieces(req, res) {
         resultMap.set(piece_id, {
           piece_id,
           piece_name,
+          piece_color,
           piece_img,
           sets: []
         });

@@ -67,6 +67,7 @@ const PieceSearch = () => {
       {searchResults.map((piece) => (
         <Box key={piece.piece_id} mb={4}>
           <Typography variant="h6">{piece.piece_name}</Typography>
+          <Typography variant="h8">{piece.piece_color}</Typography>
           <Box display="flex" alignItems="center" mb={2}>
             <img
               src={piece.piece_img}
