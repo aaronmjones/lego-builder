@@ -258,7 +258,7 @@ async function getMatchingNeededPieces(req, res) {
       s.name AS set_name,
       s.set_number,
       sp.required_qty,
-      COALESCE(bp.quantity_found, 0) AS quantity_found,
+      COALESCE(bp.quantity_found, 0) AS owned_qty,
       ub.build_id,
       ub.instance_number
     FROM users u
@@ -271,8 +271,8 @@ async function getMatchingNeededPieces(req, res) {
     JOIN pieces p
       ON p.piece_id = sp.piece_id
     LEFT JOIN build_pieces bp
-      ON bp.build_id = ub.build_id       -- NEW: join via build_id
-      AND bp.piece_id = p.piece_id       -- piece match
+      ON bp.build_id = ub.build_id
+      AND bp.piece_id = p.piece_id
     WHERE u.firebase_uid = $1
       AND p.name ILIKE '%' || $2 || '%'
     ORDER BY ub.build_id, p.piece_id;
@@ -293,7 +293,8 @@ async function getMatchingNeededPieces(req, res) {
         set_name,
         set_number,
         required_qty,
-        owned_qty
+        owned_qty,
+        build_id
       } = row;
 
       if (!resultMap.has(piece_id)) {
@@ -307,6 +308,7 @@ async function getMatchingNeededPieces(req, res) {
       }
 
       resultMap.get(piece_id).sets.push({
+        build_id,
         set_id,
         set_name,
         set_img: `https://cdn.rebrickable.com/media/sets/${set_number}.jpg`, // Example image URL format

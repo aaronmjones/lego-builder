@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  IconButton,
   TextField,
   Table,
   TableBody,
@@ -12,6 +13,8 @@ import {
   Box,
   CircularProgress
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import debounce from 'lodash.debounce';
 import useUser from '../hooks/useUser';
 import { api } from '../api';
@@ -46,6 +49,49 @@ const PieceSearch = () => {
     // Cleanup debounce on unmount
     return () => fetchResults.cancel();
   }, [query, firebaseUid]);
+
+  const handleOwnedChange = (set, piece, value, firebaseUid) => {
+      const parsedQty = Math.max(0, parseInt(value, 10) || 0);
+      const maxQty = set ? set.required_qty : Infinity;
+      const finalQty = Math.min(parsedQty, maxQty);
+
+      console.log(`Updating piece ${piece.piece_id} owned quantity to ${finalQty}`);
+      api.put('/sets/piece', {
+          buildId: set.build_id,
+          pieceId: piece.piece_id,
+          owned_qty: finalQty,
+          firebaseUid: firebaseUid
+      }).then(() => {
+          setSearchResults((prev) =>
+              prev.map((p) =>
+                  p.piece_id === piece.piece_id
+                    ? {
+                        ...p,
+                        sets: p.sets.map((s) =>
+                          s.build_id === set.build_id ? { ...s, owned_qty: finalQty } : s
+                        )
+                      }
+                    : p
+              )
+          );
+      }).catch((err) => {
+          console.error('Error updating piece:', err);
+      });
+  };
+
+  const handleIncrement = (set, piece) => {
+    console.log('Incrementing piece:', piece, set);
+    if ((set.owned_qty || 0) < set.required_qty) {
+        handleOwnedChange(set, piece, (set.owned_qty || 0) + 1, user?.uid);
+    }
+  };
+
+  const handleDecrement = (set, piece) => {
+    console.log('Decrementing piece:', piece, set);
+    if ((set.owned_qty || 0) > 0) {
+        handleOwnedChange(set, piece, (set.owned_qty || 0) - 1, user?.uid);
+    }
+  };
 
   return (
     <Box p={2}>
@@ -88,7 +134,7 @@ const PieceSearch = () => {
               </TableHead>
               <TableBody>
                 {piece.sets.map((set) => (
-                  <TableRow key={set.set_id}>
+                  <TableRow key={set.build_id}>
                     <TableCell>
                       <img
                         src={set.set_img}
@@ -98,7 +144,29 @@ const PieceSearch = () => {
                     </TableCell>
                     <TableCell>{set.set_name}</TableCell>
                     <TableCell align="center">{set.required_qty}</TableCell>
-                    <TableCell align="center">{set.owned_qty}</TableCell>
+                    <TableCell>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <IconButton
+                                size="small"
+                                onClick={() => handleDecrement(set, piece)}
+                                disabled={(set.owned_qty || 0) <= 0}
+                                sx={{ marginRight: 1 }}
+                            >
+                                <RemoveIcon />
+                            </IconButton>
+                            <span style={{ minWidth: 32, textAlign: 'center', fontSize: 16 }}>
+                                {set.owned_qty || 0}
+                            </span>
+                            <IconButton
+                                size="small"
+                                onClick={() => handleIncrement(set, piece)}
+                                disabled={(set.owned_qty || 0) >= set.required_qty}
+                                sx={{ marginLeft: 1 }}
+                            >
+                                <AddIcon />
+                            </IconButton>
+                        </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
