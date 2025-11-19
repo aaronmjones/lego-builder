@@ -12,10 +12,12 @@ import {
   Typography,
   Box,
   CircularProgress,
-  FormControl,      // added
-  InputLabel,       // added
-  Select,           // added
-  MenuItem          // added
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Checkbox,
+  ListItemText,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -32,7 +34,7 @@ const PieceSearch = () => {
   const [loading, setLoading] = useState(false);
 
   const [colors, setColors] = useState([]); // new
-  const [selectedColor, setSelectedColor] = useState(''); // new
+  const [selectedColors, setSelectedColors] = useState([]); // allow multiple
 
   const fetchColors = async () => {
     try {
@@ -73,6 +75,14 @@ const PieceSearch = () => {
   useEffect(() => {
     fetchColors();
   }, []);
+
+  // derive displayed results based on selectedColors (show all when none selected)
+  const normalizedSelected = selectedColors.map(c => String(c).toLowerCase().trim());
+  const displayedResults = searchResults.filter(piece => {
+    if (normalizedSelected.length === 0) return true;
+    const pieceColor = String(piece.piece_color || '').toLowerCase().trim();
+    return normalizedSelected.includes(pieceColor);
+  });
 
   const handleOwnedChange = (set, piece, value, firebaseUid) => {
       const parsedQty = Math.max(0, parseInt(value, 10) || 0);
@@ -138,14 +148,21 @@ const PieceSearch = () => {
           <InputLabel id={`color-select-label`}>Color</InputLabel>
           <Select
             labelId={`color-select-label`}
-            value={selectedColor}
+            multiple
+            value={selectedColors}
             label="Color"
-            onChange={(e) => setSelectedColor(e.target.value)}
+            onChange={(e) =>
+              setSelectedColors(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)
+            }
+            renderValue={(selected) => (selected.length ? selected.join(', ') : 'All')}
           >
-            <MenuItem value="">All</MenuItem>
+            <MenuItem value="">
+              <em>All</em>
+            </MenuItem>
             {colors.map((c) => (
               <MenuItem key={c} value={c}>
-                {c}
+                <Checkbox checked={selectedColors.indexOf(c) > -1} />
+                <ListItemText primary={c} />
               </MenuItem>
             ))}
           </Select>
@@ -154,7 +171,7 @@ const PieceSearch = () => {
 
       {loading && <CircularProgress />}
 
-      {searchResults.map((piece) => (
+      {displayedResults.map((piece) => (
         <Box key={piece.piece_id} mb={4}>
           <Typography variant="h6">{piece.piece_name}</Typography>
           <Typography variant="h8">{piece.piece_color}</Typography>
