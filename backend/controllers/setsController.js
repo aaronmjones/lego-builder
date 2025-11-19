@@ -248,6 +248,42 @@ async function getMatchingNeededPieces(req, res) {
   }
 
   try {
+    const totalsMap = new Map();
+    {
+      const { rows } = await db.query(
+        `SELECT
+          ub.build_id,
+          ls.set_id,
+          ls.set_number,
+          ls.name,
+          COALESCE(SUM(bp.quantity_found), 0) AS totalowned,
+          COALESCE(SUM(sp.required_qty), 0) AS totalrequired
+        FROM users u
+        JOIN user_builds ub ON ub.user_id = u.user_id
+        JOIN lego_sets ls ON ub.set_id = ls.set_id
+        JOIN set_pieces sp ON ls.set_id = sp.set_id
+        LEFT JOIN build_pieces bp
+          ON bp.build_id = ub.build_id
+        AND bp.piece_id = sp.piece_id
+        WHERE u.firebase_uid = $1
+        GROUP BY ub.build_id, ls.set_id, ls.set_number, ls.name
+        ORDER BY ls.set_id;`,
+        [firebaseUid]
+      );
+
+      rows.forEach(row => {
+        const {
+          build_id,
+          totalowned,
+          totalrequired
+        } = row;
+        totalsMap.set(build_id, {
+          totalowned: Number(totalowned),
+          totalrequired: Number(totalrequired)
+        });
+      });
+    }
+
     const sql = `
     SELECT
       p.piece_id,
@@ -294,7 +330,8 @@ async function getMatchingNeededPieces(req, res) {
         set_number,
         required_qty,
         owned_qty,
-        build_id
+        build_id,
+        instance_number
       } = row;
 
       if (!resultMap.has(piece_id)) {
@@ -309,11 +346,14 @@ async function getMatchingNeededPieces(req, res) {
 
       resultMap.get(piece_id).sets.push({
         build_id,
+        instance_number,
         set_id,
         set_name,
         set_img: `https://cdn.rebrickable.com/media/sets/${set_number}.jpg`, // Example image URL format
         required_qty,
-        owned_qty
+        owned_qty,
+        totalowned: Number(totalsMap.get(build_id).totalowned),
+        totalrequired: Number(totalsMap.get(build_id).totalrequired),
       });
     });
 

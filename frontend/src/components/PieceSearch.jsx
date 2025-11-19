@@ -14,6 +14,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import LinearProgress from '@mui/material/LinearProgress';
 import RemoveIcon from '@mui/icons-material/Remove';
 import debounce from 'lodash.debounce';
 import useUser from '../hooks/useUser';
@@ -128,12 +129,16 @@ const PieceSearch = () => {
                 <TableRow>
                   <TableCell>Set Image</TableCell>
                   <TableCell>Set Name</TableCell>
+                  <TableCell>Build Progress</TableCell>
                   <TableCell align="center">Required</TableCell>
                   <TableCell align="center">Owned</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {piece.sets.map((set) => (
+                {piece.sets.map((set) => {
+                  console.log('totalowned:', set.totalowned, 'totalrequired:', set.totalrequired);
+                  const percent = Math.round((set.totalowned / set.totalrequired) * 100);
+                  return (
                   <TableRow key={set.build_id}>
                     <TableCell>
                       <img
@@ -143,6 +148,24 @@ const PieceSearch = () => {
                       />
                     </TableCell>
                     <TableCell>{set.set_name}</TableCell>
+                    <TableCell>
+                      <div style={{ display: 'flex', alignItems: 'center', padding: '8px 0' }}>
+                        <LinearProgress
+                          variant="determinate"
+                          value={percent}
+                          sx={{
+                            height: 20,
+                            borderRadius: 10,
+                            flex: 1,
+                            backgroundColor: '#e0e0e0',
+                            '& .MuiLinearProgress-bar': {
+                              backgroundColor: '#1976d2',
+                            },
+                          }}
+                        />
+                        <span style={{ marginLeft: 16 }}>{percent}%</span>
+                      </div>
+                    </TableCell>
                     <TableCell align="center">{set.required_qty}</TableCell>
                     <TableCell>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -168,7 +191,8 @@ const PieceSearch = () => {
                         </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
