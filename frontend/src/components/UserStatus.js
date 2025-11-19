@@ -9,6 +9,9 @@ const UserStatus = ({ user }) => {
     });
   }, []);
 
+  // Debug: log user object to confirm photoURL location
+  console.log('UserStatus user:', user);
+
   const handleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
@@ -40,11 +43,18 @@ const UserStatus = ({ user }) => {
             borderRadius: "8px",
           }}
         >
-          {user.photoURL && (
+          { (user.photoURL || user.providerData?.[0]?.photoURL) && (
             <img
-              src={user.photoURL}
+              src={user.photoURL || user.providerData?.[0]?.photoURL}
               alt={user.displayName}
               style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                console.error('Profile image failed to load, src=', e.target.src);
+                e.target.onerror = null;
+                e.target.src = '/placeholder-profile.png';
+              }}
             />
           )}
           <span style={{ fontWeight: "bold" }}>Welcome, {user.displayName}</span>
