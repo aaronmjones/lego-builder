@@ -347,4 +347,10 @@ async function deleteSet(req, res) {
   }
 }
 
+// TODO:
+//SELECT DISTINCT color
+//FROM pieces
+//WHERE color IS NOT NULL
+//ORDER BY color;
+
 module.exports = { addSet, getSetPieces, updateOwnedPiece, getAllSetsWithProgress, getMatchingNeededPieces, deleteSet };

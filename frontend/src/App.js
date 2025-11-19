@@ -7,9 +7,9 @@ import useUser from './hooks/useUser'; // <-- import the hook
 
 const App = () => {
   const user = useUser(); // <-- use the hook
-  const [activeTab, setActiveTab] = useState("Add Set");
+  const [activeTab, setActiveTab] = useState("My Sets");
 
-  const tabs = ["Add Set", "My Sets", "Piece Search", "Wishlist"];
+  const tabs = ["My Sets", "Piece Search", "Wishlist"];
 
   return (
     <div className="app">

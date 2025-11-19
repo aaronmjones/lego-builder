@@ -30,8 +30,6 @@ const TabContent = ({ activeTab }) => {
   }
 
   switch (activeTab) {
-    case "Add Set":
-      return <AddSet onSetAdded={handleSetAdded} />;
     case "My Sets":
       return (
         <div>
