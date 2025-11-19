@@ -4,6 +4,7 @@ const {
   addSet,
   getSetPieces,
   getMatchingNeededPieces,
+  getAllColors,
   updateOwnedPiece,
   getAllSetsWithProgress,
   deleteSet
@@ -13,6 +14,7 @@ router.post('/', addSet);
 router.get('/', getAllSetsWithProgress);
 router.get('/pieces/search', getMatchingNeededPieces);
 router.get('/:id/pieces', getSetPieces);
+router.get('/colors', getAllColors);
 router.put('/piece', updateOwnedPiece);
 router.delete('/:id', deleteSet);
 

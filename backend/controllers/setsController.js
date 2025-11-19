@@ -387,10 +387,22 @@ async function deleteSet(req, res) {
   }
 }
 
-// TODO:
-//SELECT DISTINCT color
-//FROM pieces
-//WHERE color IS NOT NULL
-//ORDER BY color;
+async function getAllColors(req, res) {
+  try {
+    const result = await db.query(`
+      SELECT DISTINCT color
+      FROM pieces
+      WHERE color IS NOT NULL
+      ORDER BY color;
+      `);
 
-module.exports = { addSet, getSetPieces, updateOwnedPiece, getAllSetsWithProgress, getMatchingNeededPieces, deleteSet };
+    res.json(result.rows.map(row => ({
+      color: row.color
+    })));
+  } catch (err) {
+    console.error('Error retrieving colors:', err);
+    res.status(500).json({ error: 'Failed to retrieve colors' });
+  }
+}
+
+module.exports = { addSet, getSetPieces, updateOwnedPiece, getAllSetsWithProgress, getMatchingNeededPieces, getAllColors, deleteSet };

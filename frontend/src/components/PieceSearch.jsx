@@ -27,6 +27,15 @@ const PieceSearch = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const fetchColors = async () => {
+    try {
+      const res = await api.get('/sets/colors');
+      console.log('Available colors:', res.data);
+    } catch (err) {
+      console.error('Failed to fetch colors:', err);
+    }
+  };
+
   // Debounced search function
   const fetchResults = debounce(async (searchTerm) => {
     if (!searchTerm || !firebaseUid) return;
