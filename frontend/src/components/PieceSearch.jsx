@@ -11,7 +11,11 @@ import {
   Paper,
   Typography,
   Box,
-  CircularProgress
+  CircularProgress,
+  FormControl,      // added
+  InputLabel,       // added
+  Select,           // added
+  MenuItem          // added
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -27,10 +31,15 @@ const PieceSearch = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [colors, setColors] = useState([]); // new
+  const [selectedColor, setSelectedColor] = useState(''); // new
+
   const fetchColors = async () => {
     try {
       const res = await api.get('/sets/colors');
-      console.log('Available colors:', res.data);
+      // normalize to array of strings (use the appropriate property name from your API)
+      const colorStrings = (res.data || []).map(c => c.color ?? c.name ?? String(c));
+      setColors(colorStrings);
     } catch (err) {
       console.error('Failed to fetch colors:', err);
     }
@@ -59,6 +68,11 @@ const PieceSearch = () => {
     // Cleanup debounce on unmount
     return () => fetchResults.cancel();
   }, [query, firebaseUid]);
+
+  // load colors once (or when needed)
+  useEffect(() => {
+    fetchColors();
+  }, []);
 
   const handleOwnedChange = (set, piece, value, firebaseUid) => {
       const parsedQty = Math.max(0, parseInt(value, 10) || 0);
@@ -117,6 +131,26 @@ const PieceSearch = () => {
         onChange={(e) => setQuery(e.target.value)}
         sx={{ mb: 3 }}
       />
+
+      {/* Color selector populated from fetchColors */}
+      <Box mb={2} display="flex" alignItems="center" gap={2}>
+        <FormControl variant="outlined" size="small" sx={{ minWidth: 160 }}>
+          <InputLabel id={`color-select-label`}>Color</InputLabel>
+          <Select
+            labelId={`color-select-label`}
+            value={selectedColor}
+            label="Color"
+            onChange={(e) => setSelectedColor(e.target.value)}
+          >
+            <MenuItem value="">All</MenuItem>
+            {colors.map((c) => (
+              <MenuItem key={c} value={c}>
+                {c}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
 
       {loading && <CircularProgress />}
 
