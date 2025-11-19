@@ -8,6 +8,9 @@ const TabContent = ({ activeTab }) => {
   const [user, setUser] = useState(null);
   const auth = getAuth();
 
+  // new refresh key
+  const [mySetsRefreshKey, setMySetsRefreshKey] = useState(0);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -17,18 +20,25 @@ const TabContent = ({ activeTab }) => {
     return () => unsubscribe();
   }, [auth]);
 
+  const handleSetAdded = (id) => {
+    console.log("Added set ID:", id);
+    setMySetsRefreshKey(k => k + 1); // trigger refresh for MySets
+  };
+
   if (!user) {
     return <div>Please login</div>;
   }
 
   switch (activeTab) {
     case "Add Set":
-      return <AddSet onSetAdded={(id) => console.log("Added set ID:", id)} />;
+      return <AddSet onSetAdded={handleSetAdded} />;
     case "My Sets":
-      return <div>
-        <AddSet onSetAdded={(id) => console.log("Added set ID:", id)} />
-        <MySets />
-        </div>;
+      return (
+        <div>
+          <AddSet onSetAdded={handleSetAdded} />
+          <MySets refreshKey={mySetsRefreshKey} />
+        </div>
+      );
     case "Piece Search":
       return <PieceSearch />;
     case "Wishlist":

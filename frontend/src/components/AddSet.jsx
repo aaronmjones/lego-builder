@@ -48,7 +48,6 @@ function AddSet({ onSetAdded }) {
         Add Set
       </Button>
     </div>
-      {addedBuildId && <SetPiecesTable buildId={addedBuildId} setName={addedSetName} />}
     </Stack>
   );
 }

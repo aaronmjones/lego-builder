@@ -20,7 +20,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 
-const MySets = () => {
+const MySets = ({ refreshKey }) => {
   const user = useUser();
   const firebaseUid = user?.uid;
   
@@ -29,34 +29,37 @@ const MySets = () => {
   const [selectedBuildId, setSelectedBuildId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [buildIdToDelete, setSetIdToDelete] = useState(null);
-  const [hoveredBuildId, setHoveredBuildId] = useState(null); // <--- added
+  const [hoveredBuildId, setHoveredBuildId] = useState(null);
 
-  const fetchSets = (firebaseUid) => {
+  // fetch function used by effect and handlers
+  const fetchSets = async (uid) => {
+    if (!uid) return;
     setLoading(true);
-    console.log('Fetching sets for firebaseUid:', firebaseUid);
-    api.get('/sets', { params: { firebaseUid } })
-      .then(res => setSets(res.data))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    if (user?.uid) {
-      fetchSets(user.uid);
+    try {
+      const res = await api.get('/sets', { params: { firebaseUid: uid } });
+      setSets(res.data);
+    } catch (err) {
+      console.error('Failed to fetch sets:', err);
+    } finally {
+      setLoading(false);
     }
-  }, [user]);
-
+  };
+  
+  useEffect(() => {
+    fetchSets(firebaseUid);
+  }, [firebaseUid, refreshKey]);
+  
   const handleBack = () => {
     setSelectedBuildId(null);
-    fetchSets(user.uid); // Refetch sets when going back
+    fetchSets(firebaseUid); // Refetch sets when going back
   };
-
+  
   const handleDelete = () => {
     if (!buildIdToDelete) return;
-
+  
     api.delete(`/sets/${buildIdToDelete}`, { params: { firebaseUid } })
       .then(() => {
-        fetchSets(user.uid);
+        fetchSets(firebaseUid);
       })
       .catch(err => console.error('Failed to delete set:', err))
       .finally(() => {
@@ -64,7 +67,7 @@ const MySets = () => {
         setSetIdToDelete(null);
       });
   };
-
+  
   if (loading) return <div>Loading...</div>;
 
   return (
