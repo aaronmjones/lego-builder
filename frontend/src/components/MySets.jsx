@@ -19,6 +19,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import Typography from '@mui/material/Typography';
 
 const MySets = ({ refreshKey }) => {
   const user = useUser();
@@ -100,6 +101,11 @@ const MySets = ({ refreshKey }) => {
     <div style={{ position: 'relative', minHeight: 400 }}>
       <Slide direction="right" in={!selectedBuildId} mountOnEnter unmountOnExit>
         <div style={{ position: 'absolute', width: '100%' }}>
+          {sets.length > 0 && (
+            <Typography variant="h6" gutterBottom>
+              {sets.length} set{sets.length > 1 ? 's' : ''} 
+            </Typography>
+          )}
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
