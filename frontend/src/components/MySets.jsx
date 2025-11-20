@@ -23,13 +23,17 @@ import DialogActions from '@mui/material/DialogActions';
 const MySets = ({ refreshKey }) => {
   const user = useUser();
   const firebaseUid = user?.uid;
-  
+
   const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBuildId, setSelectedBuildId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [buildIdToDelete, setSetIdToDelete] = useState(null);
   const [hoveredBuildId, setHoveredBuildId] = useState(null);
+
+  // Sorting state
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [sortBy, setSortBy] = useState('setNumber');
 
   // fetch function used by effect and handlers
   const fetchSets = async (uid) => {
@@ -44,19 +48,19 @@ const MySets = ({ refreshKey }) => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchSets(firebaseUid);
   }, [firebaseUid, refreshKey]);
-  
+
   const handleBack = () => {
     setSelectedBuildId(null);
     fetchSets(firebaseUid); // Refetch sets when going back
   };
-  
+
   const handleDelete = () => {
     if (!buildIdToDelete) return;
-  
+
     api.delete(`/sets/${buildIdToDelete}`, { params: { firebaseUid } })
       .then(() => {
         fetchSets(firebaseUid);
@@ -67,7 +71,29 @@ const MySets = ({ refreshKey }) => {
         setSetIdToDelete(null);
       });
   };
-  
+
+  const handleSort = (column) => {
+    const isAsc = sortBy === column && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortBy(column);
+  };
+
+  // Sort sets based on the current sort state
+  const sortedSets = [...sets].sort((a, b) => {
+    if (sortBy === 'setNumber') {
+      const parseSetNumberWithDot = (setNumber) => {
+        const modifiedNumber = setNumber.replace('-', '.');
+        return parseFloat(modifiedNumber);
+      };
+      const aNum = parseSetNumberWithDot(a.setNumber);
+      const bNum = parseSetNumberWithDot(b.setNumber);
+      return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+    }
+    if (a[sortBy] < b[sortBy]) return sortDirection === 'asc' ? -1 : 1;
+    if (a[sortBy] > b[sortBy]) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -79,15 +105,15 @@ const MySets = ({ refreshKey }) => {
               <TableHead>
                 <TableRow>
                   <TableCell>Image</TableCell>
-                  <TableCell>Set Number</TableCell>
-                  <TableCell>Set Name</TableCell>
+                  <TableCell onClick={() => handleSort('setNumber')}>Set Number</TableCell>
+                  <TableCell onClick={() => handleSort('name')}>Set Name</TableCell>
                   <TableCell>Progress</TableCell>
                   <TableCell>Owned / Total</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sets.map(set => {
+                {sortedSets.map(set => {
                   const percent = Math.round((set.ownedPieces / set.totalPieces) * 100);
                   const imageUrl = set.imageUrl || `https://cdn.rebrickable.com/media/sets/${set.setNumber}.jpg`;
                   return (
