@@ -151,14 +151,32 @@ const PieceSearch = () => {
             multiple
             value={selectedColors}
             label="Color"
-            onChange={(e) =>
-              setSelectedColors(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)
-            }
+            onChange={(e) => {
+              const val = e.target.value;
+              const arr = typeof val === 'string' ? val.split(',') : val;
+              // if the clear token was selected, clear all
+              if (arr.includes('__clear__')) {
+                setSelectedColors([]);
+                return;
+              }
+              // otherwise set filtered values
+              setSelectedColors(arr.filter(Boolean));
+            }}
             renderValue={(selected) => (selected.length ? selected.join(', ') : 'All')}
           >
-            <MenuItem value="">
-              <em>All</em>
+            <MenuItem
+              key="clear"
+              value="__clear__"
+              disabled={selectedColors.length === 0}
+              onClick={(e) => {
+                // stop propagation so the menu doesn't re-open and apply a value
+                e.stopPropagation();
+                setSelectedColors([]);
+              }}
+            >
+              <ListItemText primary="Clear selection" />
             </MenuItem>
+
             {colors.map((c) => (
               <MenuItem key={c} value={c}>
                 <Checkbox checked={selectedColors.indexOf(c) > -1} />
