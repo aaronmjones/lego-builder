@@ -20,6 +20,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Typography from '@mui/material/Typography';
+import TableSortLabel from '@mui/material/TableSortLabel';
 
 const MySets = ({ refreshKey }) => {
   const user = useUser();
@@ -111,8 +112,24 @@ const MySets = ({ refreshKey }) => {
               <TableHead>
                 <TableRow>
                   <TableCell>Image</TableCell>
-                  <TableCell onClick={() => handleSort('setNumber')}>Set Number</TableCell>
-                  <TableCell onClick={() => handleSort('name')}>Set Name</TableCell>
+                  <TableCell sortDirection={sortBy === 'setNumber' ? sortDirection : false}>
+                    <TableSortLabel
+                      active={sortBy === 'setNumber'}
+                      direction={sortBy === 'setNumber' ? sortDirection : 'asc'}
+                      onClick={() => handleSort('setNumber')}
+                    >
+                      Set Number
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell sortDirection={sortBy === 'name' ? sortDirection : false}>
+                    <TableSortLabel
+                      active={sortBy === 'name'}
+                      direction={sortBy === 'name' ? sortDirection : 'asc'}
+                      onClick={() => handleSort('name')}
+                    >
+                      Set Name
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell>Progress</TableCell>
                   <TableCell>Owned / Total</TableCell>
                   <TableCell></TableCell>
