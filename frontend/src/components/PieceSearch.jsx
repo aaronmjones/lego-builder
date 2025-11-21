@@ -204,11 +204,30 @@ const PieceSearch = () => {
           </Box>
 
           <TableContainer component={Paper}>
-            <Table>
+            <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
+              {/* enforce identical column widths across all per-piece tables */}
+              <colgroup>
+                <col style={{ width: 120 }} />  {/* Set Image */}
+                <col style={{ width: 300 }} />  {/* Set Name */}
+                <col style={{ width: 200 }} />  {/* Build Progress */}
+                <col style={{ width: 100 }} />  {/* Required */}
+                <col style={{ width: 100 }} />  {/* Have All */}
+                <col style={{ width: 120 }} />  {/* Owned */}
+              </colgroup>
               <TableHead>
                 <TableRow>
                   <TableCell>Set Image</TableCell>
-                  <TableCell>Set Name</TableCell>
+                  <TableCell
+                    sx={{
+                      width: 240,
+                      minWidth: 240,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                  >
+                    Set Name
+                  </TableCell>
                   <TableCell>Build Progress</TableCell>
                   <TableCell align="center">Required</TableCell>
                   <TableCell align="center">Have All</TableCell>
@@ -217,19 +236,19 @@ const PieceSearch = () => {
               </TableHead>
               <TableBody>
                 {piece.sets.map((set) => {
-                  console.log('totalowned:', set.totalowned, 'totalrequired:', set.totalrequired);
-                  const percent = Math.round((set.totalowned / set.totalrequired) * 100);
+                  const percent = Math.round((set.totalowned / set.totalrequired) * 100 || 0);
                   return (
                     <TableRow key={set.build_id}>
-                      <TableCell style={{ position: 'relative', overflow: 'visible', width: 80 }}>
+                      <TableCell style={{ position: 'relative', overflow: 'visible', width: 120 }}>
                         <div style={{ position: 'relative' }}>
                           <img
                             src={set.set_img}
                             alt={set.set_name}
                             style={{
-                              height: 50,
-                              width: 'auto',
+                              width: 100,
                               objectFit: 'contain',
+                              borderRadius: 8,
+                              transition: 'transform 150ms ease, box-shadow 150ms ease',
                               cursor: 'zoom-in',
                               zIndex: 1
                             }}
@@ -243,7 +262,7 @@ const PieceSearch = () => {
                               alt={set.set_name}
                               style={{
                                 position: 'absolute',
-                                left: 70,
+                                left: 90,
                                 top: -20,
                                 width: 200,
                                 height: 200,
@@ -257,7 +276,17 @@ const PieceSearch = () => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{set.set_name}</TableCell>
+                      <TableCell
+                        sx={{
+                          width: 300,
+                          minWidth: 300,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}
+                      >
+                        {set.set_name}
+                      </TableCell>
                       <TableCell>
                         <div style={{ display: 'flex', alignItems: 'center', padding: '8px 0' }}>
                           <LinearProgress
@@ -268,9 +297,7 @@ const PieceSearch = () => {
                               borderRadius: 10,
                               flex: 1,
                               backgroundColor: '#e0e0e0',
-                              '& .MuiLinearProgress-bar': {
-                                backgroundColor: '#1976d2',
-                              },
+                              '& .MuiLinearProgress-bar': { backgroundColor: '#1976d2' }
                             }}
                           />
                           <span style={{ marginLeft: 16 }}>{percent}%</span>
@@ -278,16 +305,16 @@ const PieceSearch = () => {
                       </TableCell>
                       <TableCell align="center">{set.required_qty}</TableCell>
                       <TableCell align="center">
-                          <CheckCircleIcon
-                              sx={{
-                                  color: (set.owned_qty || 0) === set.required_qty ? 'green' : '#BDBDBD', // lighter gray
-                                  fontSize: 28
-                              }}
-                              aria-label={ (set.owned_qty || 0) === set.required_qty ? 'Have all pieces' : 'Missing pieces' }
-                          />
+                        <CheckCircleIcon
+                          sx={{
+                            color: (set.owned_qty || 0) === set.required_qty ? 'green' : '#BDBDBD',
+                            fontSize: 28
+                          }}
+                        />
                       </TableCell>
                       <TableCell>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {/* owned controls */}
                           <IconButton
                             size="small"
                             onClick={() => handleDecrement(set, piece)}
@@ -314,7 +341,7 @@ const PieceSearch = () => {
                 })}
               </TableBody>
             </Table>
-          </TableContainer>
+           </TableContainer>
         </Box>
       ))}
     </Box>

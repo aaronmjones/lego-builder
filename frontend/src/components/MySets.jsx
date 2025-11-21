@@ -108,33 +108,41 @@ const MySets = ({ refreshKey }) => {
             </Typography>
           )}
           <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Image</TableCell>
-                  <TableCell sortDirection={sortBy === 'setNumber' ? sortDirection : false}>
-                    <TableSortLabel
-                      active={sortBy === 'setNumber'}
-                      direction={sortBy === 'setNumber' ? sortDirection : 'asc'}
-                      onClick={() => handleSort('setNumber')}
-                    >
-                      Set Number
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell sortDirection={sortBy === 'name' ? sortDirection : false}>
-                    <TableSortLabel
-                      active={sortBy === 'name'}
-                      direction={sortBy === 'name' ? sortDirection : 'asc'}
-                      onClick={() => handleSort('name')}
-                    >
-                      Set Name
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>Progress</TableCell>
-                  <TableCell>Owned / Total</TableCell>
-                  <TableCell></TableCell>
-                </TableRow>
-              </TableHead>
+            <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
+              <colgroup>
+                <col style={{ width: 120 }} />  {/* Image */}
+                <col style={{ width: 120 }} />  {/* Set Number */}
+                <col style={{ width: 300 }} />  {/* Set Name */}
+                <col style={{ width: 200 }} />  {/* Progress (wider) */}
+                <col style={{ width: 140 }} />  {/* Owned / Total */}
+                <col style={{ width: 80 }} />   {/* Actions */}
+              </colgroup>
+             <TableHead>
+               <TableRow>
+                 <TableCell>Image</TableCell>
+                 <TableCell sortDirection={sortBy === 'setNumber' ? sortDirection : false}>
+                   <TableSortLabel
+                     active={sortBy === 'setNumber'}
+                     direction={sortBy === 'setNumber' ? sortDirection : 'asc'}
+                     onClick={() => handleSort('setNumber')}
+                   >
+                     Set Number
+                   </TableSortLabel>
+                 </TableCell>
+                 <TableCell sortDirection={sortBy === 'name' ? sortDirection : false}>
+                   <TableSortLabel
+                     active={sortBy === 'name'}
+                     direction={sortBy === 'name' ? sortDirection : 'asc'}
+                     onClick={() => handleSort('name')}
+                   >
+                     Set Name
+                   </TableSortLabel>
+                 </TableCell>
+                 <TableCell>Progress</TableCell>
+                 <TableCell>Owned / Total</TableCell>
+                 <TableCell></TableCell>
+               </TableRow>
+             </TableHead>
               <TableBody>
                 {sortedSets.map(set => {
                   const percent = Math.round((set.ownedPieces / set.totalPieces) * 100);
@@ -146,14 +154,14 @@ const MySets = ({ refreshKey }) => {
                       style={{ cursor: 'pointer' }}
                       onClick={() => setSelectedBuildId(set.buildId)}
                     >
-                      <TableCell style={{ position: 'relative', overflow: 'visible', width: 80 }}>
+                      <TableCell style={{ position: 'relative', overflow: 'visible', width: 120 }}>
                         <div style={{ position: 'relative' }}>
                           <img
                             src={imageUrl}
                             alt={set.name}
                             style={{
-                              width: 60,
-                              height: 60,
+                              width: 100,
+                              height: 80,
                               objectFit: 'contain',
                               borderRadius: 8,
                               transition: 'transform 150ms ease, box-shadow 150ms ease',
