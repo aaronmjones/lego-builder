@@ -203,30 +203,24 @@ const PieceSearch = () => {
             />
           </Box>
 
-          <TableContainer component={Paper} sx={{ overflowX: 'visible' }}>
+          {/* extend table to cover Box padding (Box p={2}) */}
+          <TableContainer component={Paper} sx={{ overflowX: 'visible', width: 'calc(100% + 32px)', mx: -2 }}>
             <Table sx={{ tableLayout: 'auto', width: '100%', whiteSpace: 'normal' }}>
               {/* use percentages so multiple tables share the same relative widths without forcing a large pixel width */}
               <colgroup>
                 <col style={{ width: '12%' }} />  {/* Set Image */}
-                <col style={{ width: '38%' }} />  {/* Set Name */}
-                <col style={{ width: '20%' }} />  {/* Build Progress */}
-                <col style={{ width: '10%' }} />  {/* Required */}
-                <col style={{ width: '10%' }} />  {/* Have All */}
-                <col style={{ width: '10%' }} />  {/* Owned */}
+                <col style={{ width: '12%' }} />  {/* Set Number */}
+                <col style={{ width: '28%' }} />  {/* Set Name */}
+                <col style={{ width: '24%' }} />  {/* Build Progress */}
+                <col style={{ width: '8%' }} />   {/* Required */}
+                <col style={{ width: '7%' }} />   {/* Have All */}
+                <col style={{ width: '7%' }} />   {/* Owned */}
               </colgroup>
               <TableHead>
                 <TableRow>
                   <TableCell>Set Image</TableCell>
-                  <TableCell
-                    sx={{
-                      width: '38%',
-                      whiteSpace: 'normal',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}
-                  >
-                    Set Name
-                  </TableCell>
+                  <TableCell>Set #</TableCell>
+                  <TableCell>Set Name</TableCell>
                   <TableCell>Build Progress</TableCell>
                   <TableCell align="center">Required</TableCell>
                   <TableCell align="center">Have All</TableCell>
@@ -275,13 +269,15 @@ const PieceSearch = () => {
                           )}
                         </div>
                       </TableCell>
+                      <TableCell>
+                        {set.set_number}
+                        {set.instance_number && set.instance_number !== 1 ? ` #${set.instance_number}` : null}
+                      </TableCell>
                       <TableCell
                         sx={{
-                          width: 300,
-                          minWidth: 300,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
+                          whiteSpace: 'normal',
+                          overflowWrap: 'break-word',
+                          textOverflow: 'break-word'
                         }}
                       >
                         {set.set_name}

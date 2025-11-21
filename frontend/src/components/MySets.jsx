@@ -192,7 +192,10 @@ const MySets = ({ refreshKey }) => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{set.setNumber}</TableCell>
+                      <TableCell>
+                        {set.setNumber}
+                        {set.instanceNumber && set.instanceNumber !== 1 ? ` #${set.instanceNumber}` : null}
+                      </TableCell>
                       <TableCell>{set.name}</TableCell>
                       <TableCell>
                         <div style={{ display: 'flex', alignItems: 'center', padding: '8px 0' }}>

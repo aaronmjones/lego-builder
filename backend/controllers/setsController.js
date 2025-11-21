@@ -208,6 +208,7 @@ async function getAllSetsWithProgress(req, res) {
   const result = await db.query(
     `SELECT
       ub.build_id,
+      ub.instance_number,
       ls.set_id,
       ls.set_number,
       ls.name,
@@ -230,6 +231,7 @@ async function getAllSetsWithProgress(req, res) {
 
   res.json(result.rows.map(row => ({
     buildId: row.build_id,
+    instanceNumber: row.instance_number,
     setId: row.set_id,
     setNumber: row.set_number,
     name: row.name,
@@ -349,6 +351,7 @@ async function getMatchingNeededPieces(req, res) {
         instance_number,
         set_id,
         set_name,
+        set_number,
         set_img: `https://cdn.rebrickable.com/media/sets/${set_number}.jpg`, // Example image URL format
         required_qty,
         owned_qty,
