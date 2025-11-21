@@ -15,6 +15,24 @@ function SetPiecesTable({ buildId, setName }) {
     console.log('Current firebaseUid:', firebaseUid); // <-- Add this line
     const [pieces, setPieces] = useState([]);
 
+    // column widths to match PieceSearch / MySets
+    const COL_WIDTHS = {
+        image: 100,
+        name: 'auto',
+        color: 120,
+        required: 100,
+        haveAll: 100,
+        owned: 120
+    };
+
+    const SET_NAME_COL_SX = {
+        width: COL_WIDTHS.name,
+        minWidth: COL_WIDTHS.name,
+        whiteSpace: 'normal',
+        overflowWrap: 'break-word',
+        textOverflow: 'break-word'
+    };
+
     useEffect(() => {
         if (!firebaseUid) return;
         console.log(`Fetching pieces for buildId: ${buildId} and firebaseUid: ${firebaseUid}`); // FIXME: remove debug log
@@ -60,11 +78,19 @@ function SetPiecesTable({ buildId, setName }) {
     return (
         <div>
             <Typography variant="h6">Pieces for {setName}</Typography>
-            <Table>
+            <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
+                <colgroup>
+                    <col style={{ width: COL_WIDTHS.image }} />
+                    <col style={{ width: COL_WIDTHS.name }} />
+                    <col style={{ width: COL_WIDTHS.color }} />
+                    <col style={{ width: COL_WIDTHS.required }} />
+                    <col style={{ width: COL_WIDTHS.haveAll }} />
+                    <col style={{ width: COL_WIDTHS.owned }} />
+                </colgroup>
                 <TableHead>
                     <TableRow>
                         <TableCell>Image</TableCell>
-                        <TableCell>Name</TableCell>
+                        <TableCell sx={SET_NAME_COL_SX}>Name</TableCell>
                         <TableCell>Color</TableCell>
                         <TableCell>Required</TableCell>
                         <TableCell align="center">Have All</TableCell>
@@ -74,17 +100,19 @@ function SetPiecesTable({ buildId, setName }) {
                 <TableBody>
                     {pieces.map((piece) => (
                         <TableRow key={piece.piece_id}>
-                            <TableCell><img src={piece.image_url} alt="" width="40" /></TableCell>
-                            <TableCell>{piece.name}</TableCell>
+                            <TableCell style={{ position: 'relative', overflow: 'visible', width: COL_WIDTHS.image }}>
+                                <img src={piece.image_url} alt={piece.name || ''} style={{ width: 60, height: 60, objectFit: 'contain' }} />
+                            </TableCell>
+                            <TableCell sx={SET_NAME_COL_SX}>{piece.name}</TableCell>
                             <TableCell>{piece.color}</TableCell>
                             <TableCell>{piece.required_qty}</TableCell>
                             <TableCell align="center">
                                 <CheckCircleIcon
                                     sx={{
-                                        color: (piece.owned_qty || 0) === piece.required_qty ? 'green' : '#BDBDBD', // lighter gray
+                                        color: (piece.owned_qty || 0) === piece.required_qty ? 'green' : '#BDBDBD',
                                         fontSize: 28
                                     }}
-                                    aria-label={ (piece.owned_qty || 0) === piece.required_qty ? 'Have all pieces' : 'Missing pieces' }
+                                    aria-label={(piece.owned_qty || 0) === piece.required_qty ? 'Have all pieces' : 'Missing pieces'}
                                 />
                             </TableCell>
                             <TableCell>

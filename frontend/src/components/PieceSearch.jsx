@@ -64,7 +64,7 @@ const PieceSearch = () => {
     } finally {
       setLoading(false);
     }
-  }, 400); // 400ms debounce
+  }, 500); // 500ms debounce
 
   useEffect(() => {
     fetchResults(query);
@@ -199,29 +199,28 @@ const PieceSearch = () => {
             <img
               src={piece.piece_img}
               alt={piece.piece_name}
-              style={{ height: 60, marginRight: 16 }}
+              style={{ height: 60, marginTop: 16, marginRight: 16 }}
             />
           </Box>
 
-          <TableContainer component={Paper}>
-            <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
-              {/* enforce identical column widths across all per-piece tables */}
+          <TableContainer component={Paper} sx={{ overflowX: 'visible' }}>
+            <Table sx={{ tableLayout: 'auto', width: '100%', whiteSpace: 'normal' }}>
+              {/* use percentages so multiple tables share the same relative widths without forcing a large pixel width */}
               <colgroup>
-                <col style={{ width: 120 }} />  {/* Set Image */}
-                <col style={{ width: 300 }} />  {/* Set Name */}
-                <col style={{ width: 200 }} />  {/* Build Progress */}
-                <col style={{ width: 100 }} />  {/* Required */}
-                <col style={{ width: 100 }} />  {/* Have All */}
-                <col style={{ width: 120 }} />  {/* Owned */}
+                <col style={{ width: '12%' }} />  {/* Set Image */}
+                <col style={{ width: '38%' }} />  {/* Set Name */}
+                <col style={{ width: '20%' }} />  {/* Build Progress */}
+                <col style={{ width: '10%' }} />  {/* Required */}
+                <col style={{ width: '10%' }} />  {/* Have All */}
+                <col style={{ width: '10%' }} />  {/* Owned */}
               </colgroup>
               <TableHead>
                 <TableRow>
                   <TableCell>Set Image</TableCell>
                   <TableCell
                     sx={{
-                      width: 240,
-                      minWidth: 240,
-                      whiteSpace: 'nowrap',
+                      width: '38%',
+                      whiteSpace: 'normal',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis'
                     }}
