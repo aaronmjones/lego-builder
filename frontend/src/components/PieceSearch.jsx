@@ -237,7 +237,7 @@ const PieceSearch = () => {
                 {piece.sets.map((set) => {
                   const percent = Math.round((set.totalowned / set.totalrequired) * 100 || 0);
                   return (
-                    <TableRow key={set.build_id}>
+                    <TableRow key={`${set.build_id}-${piece.piece_id}`}>
                       <TableCell style={{ position: 'relative', overflow: 'visible', width: 120 }}>
                         <div style={{ position: 'relative' }}>
                           <img
@@ -251,11 +251,11 @@ const PieceSearch = () => {
                               cursor: 'zoom-in',
                               zIndex: 1
                             }}
-                            onMouseEnter={() => setHoveredBuildId(set.build_id)}
+                            onMouseEnter={() => setHoveredBuildId(`${set.build_id}-${piece.piece_id}`)}
                             onMouseLeave={() => setHoveredBuildId(null)}
                             onError={e => { e.target.src = 'https://cdn.rebrickable.com/media/sets/placeholder.jpg'; }}
                           />
-                          {hoveredBuildId === set.build_id && (
+                          {hoveredBuildId === `${set.build_id}-${piece.piece_id}` && (
                             <img
                               src={set.set_img}
                               alt={set.set_name}
