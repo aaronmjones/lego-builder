@@ -37,6 +37,15 @@ const MySets = ({ refreshKey }) => {
   const [sortDirection, setSortDirection] = useState('asc');
   const [sortBy, setSortBy] = useState('setNumber');
 
+  // shared column style for "Set Name"
+  const SET_NAME_COL_SX = {
+    width: 240,
+    minWidth: 240,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  };
+  
   // fetch function used by effect and handlers
   const fetchSets = async (uid) => {
     if (!uid) return;
@@ -108,33 +117,42 @@ const MySets = ({ refreshKey }) => {
             </Typography>
           )}
           <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Image</TableCell>
-                  <TableCell sortDirection={sortBy === 'setNumber' ? sortDirection : false}>
-                    <TableSortLabel
-                      active={sortBy === 'setNumber'}
-                      direction={sortBy === 'setNumber' ? sortDirection : 'asc'}
-                      onClick={() => handleSort('setNumber')}
-                    >
-                      Set Number
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell sortDirection={sortBy === 'name' ? sortDirection : false}>
-                    <TableSortLabel
-                      active={sortBy === 'name'}
-                      direction={sortBy === 'name' ? sortDirection : 'asc'}
-                      onClick={() => handleSort('name')}
-                    >
-                      Set Name
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>Progress</TableCell>
-                  <TableCell>Owned / Total</TableCell>
-                  <TableCell></TableCell>
-                </TableRow>
-              </TableHead>
+            <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
+              {/* colgroup enforces column widths so Set Name is identical across tables */}
+              <colgroup>
+                <col style={{ width: 100 }} />   {/* Image */}
+                <col style={{ width: 120 }} />   {/* Set Number */}
+                <col style={{ width: 240 }} />   {/* Set Name (fixed) */}
+                <col style={{ width: 200 }} />   {/* Progress */}
+                <col style={{ width: 140 }} />   {/* Owned / Total */}
+                <col style={{ width: 80 }} />    {/* Actions */}
+              </colgroup>
+             <TableHead>
+               <TableRow>
+                 <TableCell>Image</TableCell>
+                 <TableCell sortDirection={sortBy === 'setNumber' ? sortDirection : false}>
+                   <TableSortLabel
+                     active={sortBy === 'setNumber'}
+                     direction={sortBy === 'setNumber' ? sortDirection : 'asc'}
+                     onClick={() => handleSort('setNumber')}
+                   >
+                     Set Number
+                   </TableSortLabel>
+                 </TableCell>
+                 <TableCell sortDirection={sortBy === 'name' ? sortDirection : false} sx={SET_NAME_COL_SX}>
+                   <TableSortLabel
+                     active={sortBy === 'name'}
+                     direction={sortBy === 'name' ? sortDirection : 'asc'}
+                     onClick={() => handleSort('name')}
+                   >
+                     Set Name
+                   </TableSortLabel>
+                 </TableCell>
+                 <TableCell>Progress</TableCell>
+                 <TableCell>Owned / Total</TableCell>
+                 <TableCell></TableCell>
+               </TableRow>
+             </TableHead>
               <TableBody>
                 {sortedSets.map(set => {
                   const percent = Math.round((set.ownedPieces / set.totalPieces) * 100);
@@ -146,19 +164,21 @@ const MySets = ({ refreshKey }) => {
                       style={{ cursor: 'pointer' }}
                       onClick={() => setSelectedBuildId(set.buildId)}
                     >
-                      <TableCell style={{ position: 'relative', overflow: 'visible', width: 80 }}>
-                        <div style={{ position: 'relative' }}>
+                      <TableCell style={{ position: 'relative', overflow: 'visible', width: 100, maxWidth: 100 }}>
+                        <div style={{ position: 'relative', width: 100 }}>
                           <img
                             src={imageUrl}
                             alt={set.name}
                             style={{
-                              width: 60,
-                              height: 60,
+                              width: 80,            // fixed image width
+                              height: 80,           // fixed image height (or 'auto' if you prefer)
                               objectFit: 'contain',
                               borderRadius: 8,
                               transition: 'transform 150ms ease, box-shadow 150ms ease',
                               cursor: 'zoom-in',
-                              zIndex: 1
+                              zIndex: 1,
+                              display: 'block',
+                              margin: '0 auto'
                             }}
                             onMouseEnter={() => setHoveredBuildId(set.buildId)}
                             onMouseLeave={() => setHoveredBuildId(null)}
@@ -170,7 +190,7 @@ const MySets = ({ refreshKey }) => {
                               alt={set.name}
                               style={{
                                 position: 'absolute',
-                                left: 70,
+                                left: 110,
                                 top: -20,
                                 width: 200,
                                 height: 200,
@@ -185,7 +205,9 @@ const MySets = ({ refreshKey }) => {
                         </div>
                       </TableCell>
                       <TableCell>{set.setNumber}</TableCell>
-                      <TableCell>{set.name}</TableCell>
+                      <TableCell sx={SET_NAME_COL_SX}>
+                        {set.name}
+                      </TableCell>
                       <TableCell>
                         <div style={{ display: 'flex', alignItems: 'center', padding: '8px 0' }}>
                           <LinearProgress

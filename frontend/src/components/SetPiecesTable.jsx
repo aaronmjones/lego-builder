@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import useUser from '../hooks/useUser';
 
 function SetPiecesTable({ buildId, setName }) {
@@ -66,6 +67,7 @@ function SetPiecesTable({ buildId, setName }) {
                         <TableCell>Name</TableCell>
                         <TableCell>Color</TableCell>
                         <TableCell>Required</TableCell>
+                        <TableCell align="center">Have All</TableCell>
                         <TableCell>Owned</TableCell>
                     </TableRow>
                 </TableHead>
@@ -76,6 +78,15 @@ function SetPiecesTable({ buildId, setName }) {
                             <TableCell>{piece.name}</TableCell>
                             <TableCell>{piece.color}</TableCell>
                             <TableCell>{piece.required_qty}</TableCell>
+                            <TableCell align="center">
+                                <CheckCircleIcon
+                                    sx={{
+                                        color: (piece.owned_qty || 0) === piece.required_qty ? 'green' : '#BDBDBD', // lighter gray
+                                        fontSize: 28
+                                    }}
+                                    aria-label={ (piece.owned_qty || 0) === piece.required_qty ? 'Have all pieces' : 'Missing pieces' }
+                                />
+                            </TableCell>
                             <TableCell>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <IconButton

@@ -20,6 +20,7 @@ import {
   ListItemText,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LinearProgress from '@mui/material/LinearProgress';
 import RemoveIcon from '@mui/icons-material/Remove';
 import debounce from 'lodash.debounce';
@@ -35,6 +36,7 @@ const PieceSearch = () => {
 
   const [colors, setColors] = useState([]); // new
   const [selectedColors, setSelectedColors] = useState([]); // allow multiple
+  const [hoveredBuildId, setHoveredBuildId] = useState(null); // preview hover state
 
   const fetchColors = async () => {
     try {
@@ -209,6 +211,7 @@ const PieceSearch = () => {
                   <TableCell>Set Name</TableCell>
                   <TableCell>Build Progress</TableCell>
                   <TableCell align="center">Required</TableCell>
+                  <TableCell align="center">Have All</TableCell>
                   <TableCell align="center">Owned</TableCell>
                 </TableRow>
               </TableHead>
@@ -218,12 +221,41 @@ const PieceSearch = () => {
                   const percent = Math.round((set.totalowned / set.totalrequired) * 100);
                   return (
                     <TableRow key={set.build_id}>
-                      <TableCell>
-                        <img
-                          src={set.set_img}
-                          alt={set.set_name}
-                          style={{ height: 50 }}
-                        />
+                      <TableCell style={{ position: 'relative', overflow: 'visible', width: 80 }}>
+                        <div style={{ position: 'relative' }}>
+                          <img
+                            src={set.set_img}
+                            alt={set.set_name}
+                            style={{
+                              height: 50,
+                              width: 'auto',
+                              objectFit: 'contain',
+                              cursor: 'zoom-in',
+                              zIndex: 1
+                            }}
+                            onMouseEnter={() => setHoveredBuildId(set.build_id)}
+                            onMouseLeave={() => setHoveredBuildId(null)}
+                            onError={e => { e.target.src = 'https://cdn.rebrickable.com/media/sets/placeholder.jpg'; }}
+                          />
+                          {hoveredBuildId === set.build_id && (
+                            <img
+                              src={set.set_img}
+                              alt={set.set_name}
+                              style={{
+                                position: 'absolute',
+                                left: 70,
+                                top: -20,
+                                width: 200,
+                                height: 200,
+                                objectFit: 'contain',
+                                borderRadius: 8,
+                                boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+                                zIndex: 10,
+                                pointerEvents: 'none'
+                              }}
+                            />
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>{set.set_name}</TableCell>
                       <TableCell>
@@ -245,6 +277,15 @@ const PieceSearch = () => {
                         </div>
                       </TableCell>
                       <TableCell align="center">{set.required_qty}</TableCell>
+                      <TableCell align="center">
+                          <CheckCircleIcon
+                              sx={{
+                                  color: (set.owned_qty || 0) === set.required_qty ? 'green' : '#BDBDBD', // lighter gray
+                                  fontSize: 28
+                              }}
+                              aria-label={ (set.owned_qty || 0) === set.required_qty ? 'Have all pieces' : 'Missing pieces' }
+                          />
+                      </TableCell>
                       <TableCell>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <IconButton
