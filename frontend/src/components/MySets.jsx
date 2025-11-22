@@ -32,6 +32,7 @@ const MySets = ({ refreshKey }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [buildIdToDelete, setSetIdToDelete] = useState(null);
   const [hoveredBuildId, setHoveredBuildId] = useState(null);
+  const [userProgress, setUserProgress] = useState({});
 
   // Sorting state
   const [sortDirection, setSortDirection] = useState('asc');
@@ -51,9 +52,26 @@ const MySets = ({ refreshKey }) => {
     }
   };
 
+  const fetchUserProgress = async (uid) => {
+    if (!uid) return;
+    try {
+      const res = await api.get('/sets/userprogress', { params: { firebaseUid: uid } });
+      setUserProgress(res.data);
+    } catch (err) {
+      console.error('Failed to fetch user progress:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchSets(firebaseUid);
   }, [firebaseUid, refreshKey]);
+
+  useEffect(() => {
+    console.log('Fetching user progress for firebaseUid:', firebaseUid);
+    fetchUserProgress(firebaseUid);
+  }, [firebaseUid]);
 
   const handleBack = () => {
     setSelectedBuildId(null);
@@ -107,6 +125,12 @@ const MySets = ({ refreshKey }) => {
               {sets.length} set{sets.length > 1 ? 's' : ''} 
             </Typography>
           )}
+          {userProgress.totalFound !== undefined && (
+            <Typography variant="subtitle1" gutterBottom>
+              You've found {userProgress.totalFound} out of {userProgress.totalRequired} pieces across all sets. {Math.round((userProgress.totalFound / userProgress.totalRequired) * 100)}% complete.
+
+            </Typography>
+          )}
           <TableContainer component={Paper}>
             <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
               <colgroup>
@@ -115,7 +139,7 @@ const MySets = ({ refreshKey }) => {
                 <col style={{ width: 300 }} />  {/* Set Name */}
                 <col style={{ width: 200 }} />  {/* Progress (wider) */}
                 <col style={{ width: 140 }} />  {/* Owned / Total */}
-                <col style={{ width: 80 }} />   {/* Actions */}
+                <col style={{ width: 80 }} />  {/* Actions */}
               </colgroup>
              <TableHead>
                <TableRow>

@@ -408,4 +408,40 @@ async function getAllColors(req, res) {
   }
 }
 
-module.exports = { addSet, getSetPieces, updateOwnedPiece, getAllSetsWithProgress, getMatchingNeededPieces, getAllColors, deleteSet };
+async function getUserProgress(req, res) {
+  const firebaseUid = req.query.firebaseUid;
+  console.log('getUserProgress for firebaseUid:', firebaseUid);
+
+  if (!firebaseUid) {
+    return res.status(400).json({ error: 'Missing firebaseUid' });
+  }
+
+  try {
+    const result = await db.query(
+      `SELECT
+          COALESCE(SUM(bp.quantity_found), 0) AS total_owned_qty,
+          COALESCE(SUM(sp.required_qty * ub.instance_number), 0) AS total_required_qty
+      FROM users u
+      LEFT JOIN user_builds ub
+          ON ub.user_id = u.user_id
+      LEFT JOIN set_pieces sp
+          ON sp.set_id = ub.set_id
+      LEFT JOIN build_pieces bp
+          ON bp.build_id = ub.build_id
+          AND bp.piece_id = sp.piece_id
+      WHERE u.firebase_uid = $1;
+      `,
+      [firebaseUid]
+    );
+
+    res.json({
+      totalFound: result.rows[0].total_owned_qty,
+      totalRequired: result.rows[0].total_required_qty
+    });
+  } catch (err) {
+    console.error('Error retrieving user progress:', err);
+    res.status(500).json({ error: 'Failed to retrieve user progress' });
+  }
+}
+
+module.exports = { addSet, getSetPieces, updateOwnedPiece, getAllSetsWithProgress, getMatchingNeededPieces, getAllColors, deleteSet, getUserProgress };
