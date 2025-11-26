@@ -1,70 +1,80 @@
-# Getting Started with Create React App
+# LEGO Builder
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This application facilitates LEGO set building from a collection of loose pieces.
 
-## Available Scripts
+If you have a bin of thousands or possibly tens of thousands of pieces that you want to build into lego sets, then this app can help you efficiently organize the pieces into sets. After the pieces are organized into individual sets, you're ready to build.
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- Accounts
+  - Login managed via Firebase, allowing you to login with your Google credentials
+- Add your sets to the app
+- Track pieces required per set and pieces you've found
+- Piece search allows you to identify a LEGO piece and what sets it belongs in
+  - Filter by color
+  - Search by part name
+- Integrates with rebrickable.com API for set images, piece images, and metadata
+- Wishlist
+  - Coming soon: will allow you to view a list of parts you need and their quantities
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Use Case
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Gather your loose LEGOs into a bin
+- Identify all the sets you intend to build. Add them to the app in the My Sets tab.
+- Have a physical container available for each LEGO set. Label it with the LEGO set number/name. Brown paper bags and a sharpie work well.
+- Start organizing
+  - Pull a LEGO piece from the bin
+  - Search for the piece in the Piece Search tab
+  - When found, increment the "Owned" quantity for the desired set and drop the piece in the corresponding physical container
+  - Repeat
 
-### `npm test`
+## Tips
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Search Tips
 
-### `npm run build`
+- Be sure to use the color filter
+- Enter the dimensions, e.g., "2 x 4"
+- Get to know the piece types; for example "Brick" vs "Plate" vs "Tile". You can enter the type and dimension like "Brick 2 x 4".
+- The piece search is simple and just checks if your text is a substring of any existing piece name.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Application Setup
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+This application will run on Windows, Linux or MacOS. On Windows, I use git-bash to run bash scripts.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Install PostgreSQL
+- Run `scripts/create_tables.sh`
+- Create `backend/.env` and set the following:
+   ```
+   DATABASE_URL=postgres://username:password@localhost:5432/legodb
+   REBRICKABLE_API_KEY=your_rebrickable_api_key_here
+   ```
+- [Optional] Create `frontend/.env.local` and set the following to allow access from web browsers on other computers on your LAN:
+   ```
+   REACT_APP_API_URL=http://<your-ip>:5000/api
+   ```
+   If you skip this, the app will only work on the machine hosting the app.
+- Install backend dependencies:
+   ```
+   cd backend
+   npm install
+   ```
+- Install frontend dependencies:
+   ```
+   cd frontend
+   npm install
+   ```
 
-### `npm run eject`
+## Application Running
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- Run the backend
+   ```
+   cd backend
+   npm start
+   ```
+- Run the frontend
+   ```
+   cd frontend
+   npm start
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+The backend and frontend are now running. The frontend should have opened in your default browser.
