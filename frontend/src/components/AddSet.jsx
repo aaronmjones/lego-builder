@@ -3,8 +3,10 @@ import { api } from '../api';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import SetPiecesTable from './SetPiecesTable';
 import useUser from '../hooks/useUser';
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 function AddSet({ onSetAdded }) {
   const user = useUser();
@@ -28,7 +30,6 @@ function AddSet({ onSetAdded }) {
     }
   };
 
-  // FIXME: When SetPiecesTable is diplayed, the TextField and Button position is not correct
   return (
     <Stack spacing={2} sx={{ padding: 2 }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -47,6 +48,11 @@ function AddSet({ onSetAdded }) {
       >
         Add Set
       </Button>
+      <Tooltip title="For example: 60052-1 (not 60052). '-1' is usually required at the end.">
+        <IconButton size="small">
+          <HelpOutlineIcon />
+        </IconButton>
+      </Tooltip>
     </div>
     </Stack>
   );
